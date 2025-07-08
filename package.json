@@ -1,0 +1,77 @@
+{
+  "name": "zotero-web-client",
+  "version": "1.0.0",
+  "description": "A modern, robust, and type-safe Zotero Web API client for TypeScript/JavaScript",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "require": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.mjs"
+      }
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "npm run generate && tsup",
+    "generate": "node scripts/generate-types.js",
+    "dev": "tsup --watch",
+    "test": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:ui": "vitest --ui",
+    "type-check": "tsc --noEmit",
+    "lint": "eslint src --ext .ts,.js",
+    "lint:fix": "eslint src --ext .ts,.js --fix",
+    "validate": "npm run type-check && npm run lint && npm run test run",
+    "prepublishOnly": "npm run validate && npm run build"
+  },
+  "keywords": [
+    "zotero",
+    "api",
+    "client",
+    "typescript",
+    "research",
+    "bibliography",
+    "citations"
+  ],
+  "author": "Enrique Velasco",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/evelasko/zotero-web-client.git"
+  },
+  "bugs": {
+    "url": "https://github.com/evelasko/zotero-web-client/issues"
+  },
+  "homepage": "https://github.com/evelasko/zotero-web-client#readme",
+  "devDependencies": {
+    "@eslint/js": "^9.0.0",
+    "@types/node": "^20.0.0",
+    "@vitest/coverage-v8": "^1.0.0",
+    "@vitest/ui": "^1.0.0",
+    "eslint": "^9.0.0",
+    "json-schema-to-typescript": "^13.0.0",
+    "json-schema-to-zod": "^2.0.0",
+    "msw": "^2.0.0",
+    "tsup": "^8.0.0",
+    "typescript": "^5.0.0",
+    "typescript-eslint": "^8.0.0",
+    "vitest": "^1.0.0"
+  },
+  "dependencies": {
+    "zod": "^3.22.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
