@@ -124,8 +124,8 @@ export class ItemsAPI {
       response.data.forEach(item => {
         try {
           ZoteroItemSchema.parse(item);
-        } catch (error) {
-          console.warn('Invalid item data received:', error);
+        } catch {
+          // Invalid item data received
         }
       });
     }
@@ -152,8 +152,8 @@ export class ItemsAPI {
     // Validate response data
     try {
       ZoteroItemSchema.parse(response.data);
-    } catch (error) {
-      console.warn('Invalid item data received:', error);
+    } catch {
+      // Invalid item data received
     }
     
     return response;
@@ -211,8 +211,8 @@ export class ItemsAPI {
     // Validate response data
     try {
       ZoteroItemSchema.parse(response.data);
-    } catch (error) {
-      console.warn('Invalid item data received:', error);
+    } catch {
+      // Invalid item data received
     }
     
     return response;

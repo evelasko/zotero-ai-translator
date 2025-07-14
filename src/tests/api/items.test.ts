@@ -129,7 +129,7 @@ describe('ItemsAPI', () => {
       ];
 
       await expect(
-        client.items().create('user', userId, invalidItems as any)
+        client.items().create('user', userId, invalidItems as unknown[])
       ).rejects.toThrow('Item type is required');
     });
   });
@@ -205,7 +205,7 @@ describe('ItemsAPI', () => {
       ];
 
       await expect(
-        client.items().updateMultiple('user', userId, invalidItems as any)
+        client.items().updateMultiple('user', userId, invalidItems as unknown[])
       ).rejects.toThrow('Item key is required');
     });
   });

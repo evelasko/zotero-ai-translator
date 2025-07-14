@@ -310,7 +310,7 @@ export class ZoteroHttpClient {
     const linkEntries = linkHeader.split(',');
     
     for (const entry of linkEntries) {
-      const match = entry.match(/<([^>]+)>; rel=\"([^\"]+)\"/);
+      const match = entry.match(/<([^>]+)>; rel="([^"]+)"/);
       if (match) {
         const [, url, rel] = match;
         if (url && rel && (rel === 'self' || rel === 'next' || rel === 'prev' || rel === 'first' || rel === 'last')) {

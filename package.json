@@ -1,19 +1,30 @@
 {
   "name": "zotero-web-client",
   "version": "1.0.0",
+  "type": "module",
   "description": "A modern, robust, and type-safe Zotero Web API client for TypeScript/JavaScript",
-  "main": "./dist/index.js",
-  "module": "./dist/index.mjs",
+  "author": "Enrique Velasco",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/evelasko/zotero-web-client.git"
+  },
+  "bugs": {
+    "url": "https://github.com/evelasko/zotero-web-client/issues"
+  },
+  "homepage": "https://github.com/evelasko/zotero-web-client#readme",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "require": {
-        "types": "./dist/index.d.ts",
-        "default": "./dist/index.js"
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
       },
       "import": {
         "types": "./dist/index.d.ts",
-        "default": "./dist/index.mjs"
+        "default": "./dist/index.js"
       }
     }
   },
@@ -24,7 +35,7 @@
   ],
   "scripts": {
     "build": "npm run generate && tsup",
-    "generate": "node scripts/generate-types.js",
+    "generate": "node scripts/generate-types.cjs",
     "dev": "tsup --watch",
     "test": "vitest",
     "test:coverage": "vitest run --coverage",
@@ -32,7 +43,7 @@
     "type-check": "tsc --noEmit",
     "lint": "eslint src --ext .ts,.js",
     "lint:fix": "eslint src --ext .ts,.js --fix",
-    "validate": "npm run type-check && npm run lint && npm run test run",
+    "validate": "npm run type-check && npm run lint && npm run test -- --run",
     "prepublishOnly": "npm run validate && npm run build"
   },
   "keywords": [
@@ -44,16 +55,6 @@
     "bibliography",
     "citations"
   ],
-  "author": "Enrique Velasco",
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/evelasko/zotero-web-client.git"
-  },
-  "bugs": {
-    "url": "https://github.com/evelasko/zotero-web-client/issues"
-  },
-  "homepage": "https://github.com/evelasko/zotero-web-client#readme",
   "devDependencies": {
     "@eslint/js": "^9.0.0",
     "@types/node": "^20.0.0",

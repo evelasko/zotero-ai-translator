@@ -138,7 +138,7 @@ export function createErrorFromResponse(
       return new ZoteroConflictError(errorMessage, statusCode, response, body);
     case 412:
       return new ZoteroValidationError(errorMessage, statusCode, response, body);
-    case 429:
+    case 429: {
       const retryAfter = response.headers.get('Retry-After');
       const backoff = response.headers.get('Backoff');
       return new ZoteroRateLimitError(
@@ -149,6 +149,7 @@ export function createErrorFromResponse(
         retryAfter ? parseInt(retryAfter, 10) : undefined,
         backoff ? parseInt(backoff, 10) : undefined
       );
+    }
     case 500:
     case 502:
     case 503:

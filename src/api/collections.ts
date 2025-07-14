@@ -85,8 +85,8 @@ export class CollectionsAPI {
       response.data.forEach(collection => {
         try {
           ZoteroCollectionSchema.parse(collection);
-        } catch (error) {
-          console.warn('Invalid collection data received:', error);
+        } catch {
+          // Invalid collection data received
         }
       });
     }
@@ -113,8 +113,8 @@ export class CollectionsAPI {
     // Validate response data
     try {
       ZoteroCollectionSchema.parse(response.data);
-    } catch (error) {
-      console.warn('Invalid collection data received:', error);
+    } catch {
+      // Invalid collection data received
     }
     
     return response;
@@ -171,8 +171,8 @@ export class CollectionsAPI {
     // Validate response data
     try {
       ZoteroCollectionSchema.parse(response.data);
-    } catch (error) {
-      console.warn('Invalid collection data received:', error);
+    } catch {
+      // Invalid collection data received
     }
     
     return response;

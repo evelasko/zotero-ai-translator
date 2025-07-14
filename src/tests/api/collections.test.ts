@@ -106,7 +106,7 @@ describe('CollectionsAPI', () => {
       ];
 
       await expect(
-        client.collections().create('user', userId, invalidCollections as any)
+        client.collections().create('user', userId, invalidCollections as unknown[])
       ).rejects.toThrow('Collection name is required');
     });
   });
@@ -169,7 +169,7 @@ describe('CollectionsAPI', () => {
       ];
 
       await expect(
-        client.collections().updateMultiple('user', userId, invalidCollections as any)
+        client.collections().updateMultiple('user', userId, invalidCollections as unknown[])
       ).rejects.toThrow('Collection key is required');
     });
   });

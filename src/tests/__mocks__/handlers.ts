@@ -127,7 +127,7 @@ export const handlers = [
         unchanged: {},
         failed: {},
       }, { status: 200 });
-    } catch (error) {
+    } catch {
       // Handle invalid JSON or other parsing errors
       return HttpResponse.json(
         { error: 'Invalid JSON format' },
@@ -287,8 +287,8 @@ export const handlers = [
         acc[index] = collection;
         return acc;
       }, {} as Record<number, unknown>),
-      success: updatedCollections.reduce((acc, collection: any, index) => {
-        acc[index] = collection.key;
+      success: updatedCollections.reduce((acc, collection: Record<string, unknown>, index) => {
+        acc[index] = collection['key'] as string;
         return acc;
       }, {} as Record<number, string>),
       unchanged: {},
@@ -360,8 +360,8 @@ export const handlers = [
         acc[index] = item;
         return acc;
       }, {} as Record<number, unknown>),
-      success: updatedItems.reduce((acc, item: any, index) => {
-        acc[index] = item.key;
+      success: updatedItems.reduce((acc, item: Record<string, unknown>, index) => {
+        acc[index] = item['key'] as string;
         return acc;
       }, {} as Record<number, string>),
       unchanged: {},
