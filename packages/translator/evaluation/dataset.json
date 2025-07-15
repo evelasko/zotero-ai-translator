@@ -1,0 +1,77 @@
+[
+  {
+    "id": "simple-blog-post",
+    "input": {
+      "url": "https://www.joelonsoftware.com/2000/08/09/the-joel-test-12-steps-to-better-code/"
+    },
+    "groundTruth": {
+      "itemType": "blogPost",
+      "title": "The Joel Test: 12 Steps to Better Code",
+      "creators": [{ "creatorType": "author", "firstName": "Joel", "lastName": "Spolsky" }],
+      "date": "2000-08-09",
+      "blogTitle": "Joel on Software"
+    }
+  },
+  {
+    "id": "complex-academic-pdf",
+    "input": {
+      "url": "https://arxiv.org/pdf/1706.03762.pdf"
+    },
+    "groundTruth": {
+      "itemType": "journalArticle",
+      "title": "Attention Is All You Need",
+      "creators": [
+        { "creatorType": "author", "firstName": "Ashish", "lastName": "Vaswani" },
+        { "creatorType": "author", "firstName": "Noam", "lastName": "Shazeer" },
+        { "creatorType": "author", "firstName": "Niki", "lastName": "Parmar" },
+        { "creatorType": "author", "firstName": "Jakob", "lastName": "Uszkoreit" },
+        { "creatorType": "author", "firstName": "Llion", "lastName": "Jones" },
+        { "creatorType": "author", "firstName": "Aidan N.", "lastName": "Gomez" },
+        { "creatorType": "author", "firstName": "Lukasz", "lastName": "Kaiser" },
+        { "creatorType": "author", "firstName": "Illia", "lastName": "Polosukhin" }
+      ],
+      "date": "2017-06-12",
+      "abstractNote": "The dominant sequence transduction models are based on complex recurrent or convolutional neural networks"
+    }
+  },
+  {
+    "id": "mainstream-news-article",
+    "input": {
+      "url": "https://www.nytimes.com/2023/03/14/technology/openai-gpt4-chatgpt.html"
+    },
+    "groundTruth": {
+      "itemType": "newspaperArticle",
+      "title": "OpenAI Unveils GPT-4, a New A.I. That Is More Powerful Than ChatGPT",
+      "publicationTitle": "The New York Times",
+      "creators": [{ "creatorType": "author", "firstName": "Cade", "lastName": "Metz" }],
+      "date": "2023-03-14",
+      "section": "Technology"
+    }
+  },
+  {
+    "id": "ambiguous-source",
+    "input": {
+      "url": "https://medium.com/@username/understanding-neural-networks-from-scratch-12345"
+    },
+    "groundTruth": {
+      "itemType": "webpage",
+      "title": "Understanding Neural Networks from Scratch",
+      "creators": [{ "creatorType": "author", "name": "username" }],
+      "websiteTitle": "Medium",
+      "websiteType": "Blog"
+    }
+  },
+  {
+    "id": "edge-case-missing-info",
+    "input": {
+      "url": "https://ntrs.nasa.gov/citations/19960041413"
+    },
+    "groundTruth": {
+      "itemType": "report",
+      "title": "Research and Technology 1995",
+      "date": "1996-03-01",
+      "institution": "NASA Lewis Research Center",
+      "creators": []
+    }
+  }
+]

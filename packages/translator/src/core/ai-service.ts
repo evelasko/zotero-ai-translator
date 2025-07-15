@@ -5,15 +5,15 @@
 import { StructuredOutputParser } from '@langchain/core/output_parsers';
 import { PromptTemplate } from '@langchain/core/prompts';
 import { ChatOpenAI } from '@langchain/openai';
-import { ZoteroItemData } from '@zotero-suite/schema-types';
+import { ZoteroItemData, ZoteroItemType } from '@zotero-suite/schema-types';
 import { z } from 'zod';
 import {
-    AIClassificationError,
-    AIConfig,
-    AIExtractionError,
-    AIValidationError,
-    ExtractedContent,
-    RequiredAIConfig
+  AIClassificationError,
+  AIConfig,
+  AIExtractionError,
+  AIValidationError,
+  ExtractedContent,
+  RequiredAIConfig
 } from '../types';
 
 /**
@@ -177,7 +177,7 @@ Item Type:`);
   /**
    * Step 2: Extraction - extract structured data using dynamic Zod schema
    */
-  private async extractStructuredData(content: ExtractedContent, itemType: string): Promise<any> {
+  private async extractStructuredData(content: ExtractedContent, itemType: string): Promise<unknown> {
     try {
       // Get the appropriate Zod schema for the item type
       const schema = this.getSchemaForItemType(itemType);
@@ -236,7 +236,7 @@ Extracted Data:`);
   /**
    * Step 3: Validation - validate extracted data using Zod schema
    */
-  private async validateExtractedData(extractedData: any, itemType: string): Promise<ZoteroItemData> {
+  private async validateExtractedData(extractedData: unknown, itemType: string): Promise<ZoteroItemData> {
     try {
       const schema = this.getSchemaForItemType(itemType);
       
@@ -250,12 +250,12 @@ Extracted Data:`);
       }
 
       // Add required fields that might be missing
-      const validatedData = result.data as any;
+      const validatedData = result.data as ZoteroItemData;
       
       // Ensure required fields are present
       const finalItem: ZoteroItemData = {
         ...(validatedData as object),
-        itemType: itemType as any, // Fix the type assertion
+        itemType: itemType as unknown as ZoteroItemType, // Fix the type assertion
         dateAdded: validatedData.dateAdded || new Date().toISOString(),
         dateModified: validatedData.dateModified || new Date().toISOString(),
         creators: validatedData.creators || [],

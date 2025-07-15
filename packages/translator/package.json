@@ -43,6 +43,8 @@
     "@types/jsdom": "^21.1.7",
     "@types/node": "^24.0.14",
     "@types/pdf-parse": "^1.1.5",
+    "dotenv": "^16.6.1",
+    "ts-node": "^10.9.2",
     "typescript": "^5.8.3",
     "vitest": "^3.2.4"
   },

@@ -49,7 +49,7 @@ export interface TranslatorConfig {
   
   /**
    * Maximum content length to process (in characters)
-   * @default 50000
+   * @default 30000
    */
   maxContentLength?: number;
   
