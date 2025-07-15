@@ -29,7 +29,7 @@
     "clean": "rm -rf lib dist"
   },
   "dependencies": {
-    "@langchain/core": "^0.3.30",
+    "@langchain/core": "^0.3.62",
     "@langchain/openai": "^0.6.0",
     "@mozilla/readability": "^0.6.0",
     "@zotero-suite/schema-types": "file:../schema-types",

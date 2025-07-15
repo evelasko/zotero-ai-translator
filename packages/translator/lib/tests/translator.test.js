@@ -12,7 +12,7 @@ vitest_1.vi.mock('@langchain/openai', () => ({
     // Mock implementation
     })),
 }));
-vitest_1.vi.mock('langchain/prompts', () => ({
+vitest_1.vi.mock('@langchain/core/prompts', () => ({
     PromptTemplate: {
         fromTemplate: vitest_1.vi.fn().mockReturnValue({
             pipe: vitest_1.vi.fn().mockReturnValue({
@@ -21,7 +21,7 @@ vitest_1.vi.mock('langchain/prompts', () => ({
         }),
     },
 }));
-vitest_1.vi.mock('langchain/output_parsers', () => ({
+vitest_1.vi.mock('@langchain/core/output_parsers', () => ({
     StructuredOutputParser: {
         fromZodSchema: vitest_1.vi.fn().mockReturnValue({
             getFormatInstructions: vitest_1.vi.fn().mockReturnValue('Format instructions'),
@@ -103,18 +103,18 @@ vitest_1.vi.mock('langchain/output_parsers', () => ({
         });
         (0, vitest_1.it)('should throw error for invalid AI temperature', () => {
             (0, vitest_1.expect)(() => new translator_1.Translator({
-                ai: { apiKey: 'test-key', temperature: -1 }
+                ai: { apiKey: 'test-key', temperature: -1 },
             })).toThrow(types_1.ConfigurationError);
             (0, vitest_1.expect)(() => new translator_1.Translator({
-                ai: { apiKey: 'test-key', temperature: 3 }
+                ai: { apiKey: 'test-key', temperature: 3 },
             })).toThrow(types_1.ConfigurationError);
         });
         (0, vitest_1.it)('should throw error for invalid AI max tokens', () => {
             (0, vitest_1.expect)(() => new translator_1.Translator({
-                ai: { apiKey: 'test-key', maxTokens: 0 }
+                ai: { apiKey: 'test-key', maxTokens: 0 },
             })).toThrow(types_1.ConfigurationError);
             (0, vitest_1.expect)(() => new translator_1.Translator({
-                ai: { apiKey: 'test-key', maxTokens: -100 }
+                ai: { apiKey: 'test-key', maxTokens: -100 },
             })).toThrow(types_1.ConfigurationError);
         });
     });

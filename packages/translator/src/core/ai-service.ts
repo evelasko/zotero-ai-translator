@@ -2,7 +2,7 @@
  * AI Service for LangChain-powered content translation
  */
 
-import { OutputFixingParser, StructuredOutputParser } from '@langchain/core/output_parsers';
+import { StructuredOutputParser } from '@langchain/core/output_parsers';
 import { PromptTemplate } from '@langchain/core/prompts';
 import { ChatOpenAI } from '@langchain/openai';
 import { ZoteroItemData } from '@zotero-suite/schema-types';
@@ -185,9 +185,6 @@ Item Type:`);
       // Create structured output parser
       const parser = StructuredOutputParser.fromZodSchema(schema);
       
-      // Create output fixing parser for error recovery
-      const outputFixingParser = OutputFixingParser.fromLLM(this.extractionModel, parser);
-      
       // Create extraction prompt
       const extractionPrompt = PromptTemplate.fromTemplate(`
 You are a skilled bibliographic data extraction expert. Extract structured metadata from the given content.
@@ -215,7 +212,7 @@ Instructions:
 
 Extracted Data:`);
 
-      const extractionChain = extractionPrompt.pipe(this.extractionModel).pipe(outputFixingParser);
+      const extractionChain = extractionPrompt.pipe(this.extractionModel).pipe(parser);
       
       const result = await extractionChain.invoke({
         title: content.title || '',
@@ -253,12 +250,12 @@ Extracted Data:`);
       }
 
       // Add required fields that might be missing
-      const validatedData = result.data;
+      const validatedData = result.data as any;
       
       // Ensure required fields are present
       const finalItem: ZoteroItemData = {
-        ...validatedData,
-        itemType,
+        ...(validatedData as object),
+        itemType: itemType as any, // Fix the type assertion
         dateAdded: validatedData.dateAdded || new Date().toISOString(),
         dateModified: validatedData.dateModified || new Date().toISOString(),
         creators: validatedData.creators || [],

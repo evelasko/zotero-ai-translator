@@ -4,9 +4,9 @@
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AIService = void 0;
+const output_parsers_1 = require("@langchain/core/output_parsers");
+const prompts_1 = require("@langchain/core/prompts");
 const openai_1 = require("@langchain/openai");
-const prompts_1 = require("langchain/prompts");
-const output_parsers_1 = require("langchain/output_parsers");
 const zod_1 = require("zod");
 const types_1 = require("../types");
 /**
@@ -155,8 +155,6 @@ Item Type:`);
             const schema = this.getSchemaForItemType(itemType);
             // Create structured output parser
             const parser = output_parsers_1.StructuredOutputParser.fromZodSchema(schema);
-            // Create output fixing parser for error recovery
-            const outputFixingParser = output_parsers_1.OutputFixingParser.fromLLM(this.extractionModel, parser);
             // Create extraction prompt
             const extractionPrompt = prompts_1.PromptTemplate.fromTemplate(`
 You are a skilled bibliographic data extraction expert. Extract structured metadata from the given content.
@@ -183,7 +181,7 @@ Instructions:
 {format_instructions}
 
 Extracted Data:`);
-            const extractionChain = extractionPrompt.pipe(this.extractionModel).pipe(outputFixingParser);
+            const extractionChain = extractionPrompt.pipe(this.extractionModel).pipe(parser);
             const result = await extractionChain.invoke({
                 title: content.title || '',
                 url: content.url || '',
@@ -215,7 +213,7 @@ Extracted Data:`);
             // Ensure required fields are present
             const finalItem = {
                 ...validatedData,
-                itemType,
+                itemType: itemType, // Fix the type assertion
                 dateAdded: validatedData.dateAdded || new Date().toISOString(),
                 dateModified: validatedData.dateModified || new Date().toISOString(),
                 creators: validatedData.creators || [],

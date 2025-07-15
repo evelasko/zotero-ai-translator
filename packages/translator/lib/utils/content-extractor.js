@@ -7,9 +7,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ContentExtractor = void 0;
+const readability_1 = require("@mozilla/readability");
 const axios_1 = __importDefault(require("axios"));
 const jsdom_1 = require("jsdom");
-const readability_1 = require("@mozilla/readability");
 const pdf_parse_1 = __importDefault(require("pdf-parse"));
 const types_1 = require("../types");
 /**
@@ -58,6 +58,10 @@ class ContentExtractor {
     async extractFromSourceText(sourceText) {
         if (this.config.debug) {
             console.log(`[ContentExtractor] Extracting content from source text (${sourceText.length} chars)`);
+        }
+        // Validate that we have meaningful content to extract
+        if (!sourceText || sourceText.trim().length === 0) {
+            throw new types_1.ContentExtractionError('Cannot extract content from empty source text', new Error('Source text is empty or contains only whitespace'));
         }
         try {
             // Try to parse as HTML first
