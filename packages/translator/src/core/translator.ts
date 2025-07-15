@@ -12,13 +12,15 @@ import {
   TranslatorError 
 } from '../types';
 import { ContentExtractor } from '../utils/content-extractor';
+import { AIService } from './ai-service';
 
 /**
  * Main Translator class that orchestrates content ingestion and AI-powered translation
  */
 export class Translator {
-  private readonly config: Required<TranslatorConfig>;
+  private readonly config: Required<Omit<TranslatorConfig, 'ai'>> & { ai?: TranslatorConfig['ai'] };
   private readonly contentExtractor: ContentExtractor;
+  private readonly aiService?: AIService;
 
   constructor(config: TranslatorConfig = {}) {
     this.config = {
@@ -27,13 +29,22 @@ export class Translator {
       userAgent: config.userAgent ?? 'Zotero-AI-Translator/1.0.0',
       maxContentLength: config.maxContentLength ?? 50000,
       debug: config.debug ?? false,
+      ai: config.ai,
     };
 
     this.validateConfig();
     this.contentExtractor = new ContentExtractor(this.config);
+    
+    // Initialize AI service if configuration is provided
+    if (this.config.ai) {
+      this.aiService = new AIService(this.config.ai);
+    }
 
     if (this.config.debug) {
-      console.log('[Translator] Initialized with config:', this.config);
+      console.log('[Translator] Initialized with config:', { 
+        ...this.config, 
+        ai: this.config.ai ? { ...this.config.ai, apiKey: '[REDACTED]' } : undefined 
+      });
     }
   }
 
@@ -127,17 +138,47 @@ export class Translator {
   /**
    * AI Translation Pipeline - converts extracted content to Zotero item data
    * 
-   * NOTE: This is a placeholder implementation. The actual AI logic using LangChain
-   * will be implemented in a future step.
+   * This method implements the two-step AI translation process:
+   * 1. Classification: Determine the appropriate Zotero item type
+   * 2. Extraction: Extract structured metadata using LangChain with dynamic schemas
+   * 3. Validation: Validate the result using Zod safeParse
    */
   private async translateToZoteroItem(content: ExtractedContent): Promise<ZoteroItemData> {
     if (this.config.debug) {
-      console.log('[Translator] AI translation pipeline (placeholder implementation)');
+      console.log('[Translator] Starting AI translation pipeline');
     }
 
-    // TODO: Implement LangChain AI logic here
-    // For now, return a basic item structure based on extracted content
-    
+    // Use AI service if available, otherwise fall back to basic extraction
+    if (this.aiService) {
+      try {
+        const result = await this.aiService.translateContent(content);
+        
+        if (this.config.debug) {
+          console.log(`[Translator] AI translation completed with confidence: ${result.confidence}`);
+        }
+        
+        return result.item;
+      } catch (error) {
+        if (this.config.debug) {
+          console.warn('[Translator] AI translation failed, falling back to basic extraction:', error);
+        }
+        
+        // Fall back to basic extraction if AI fails
+        return this.basicFallbackExtraction(content);
+      }
+    } else {
+      if (this.config.debug) {
+        console.log('[Translator] No AI configuration provided, using basic extraction');
+      }
+      
+      return this.basicFallbackExtraction(content);
+    }
+  }
+
+  /**
+   * Basic fallback extraction when AI is not available or fails
+   */
+  private basicFallbackExtraction(content: ExtractedContent): ZoteroItemData {
     const item: ZoteroItemData = {
       itemType: this.inferItemType(content),
       title: content.title || 'Untitled',
@@ -216,6 +257,22 @@ export class Translator {
     
     if (!this.config.userAgent || this.config.userAgent.trim().length === 0) {
       throw new ConfigurationError('User agent must be specified');
+    }
+    
+    // Validate AI configuration if provided
+    if (this.config.ai) {
+      if (!this.config.ai.apiKey || this.config.ai.apiKey.trim().length === 0) {
+        throw new ConfigurationError('AI API key is required when AI configuration is provided');
+      }
+      
+      if (this.config.ai.temperature !== undefined && 
+          (this.config.ai.temperature < 0 || this.config.ai.temperature > 2)) {
+        throw new ConfigurationError('AI temperature must be between 0 and 2');
+      }
+      
+      if (this.config.ai.maxTokens !== undefined && this.config.ai.maxTokens <= 0) {
+        throw new ConfigurationError('AI max tokens must be greater than 0');
+      }
     }
   }
 

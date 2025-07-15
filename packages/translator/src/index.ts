@@ -11,6 +11,7 @@ export type {
   UrlTranslationInput,
   TextTranslationInput,
   TranslatorConfig,
+  AIConfig,
   ExtractedContent,
   TranslationResult,
 } from './types';
@@ -21,10 +22,16 @@ export {
   UrlFetchError,
   PdfParseError,
   ConfigurationError,
+  AIClassificationError,
+  AIExtractionError,
+  AIValidationError,
 } from './types';
 
 // Export content extraction utilities
 export { ContentExtractor } from './utils/content-extractor';
+
+// Export AI service
+export { AIService } from './core/ai-service';
 
 // Default export for convenience
 export { Translator as default } from './core/translator';

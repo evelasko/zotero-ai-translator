@@ -9,11 +9,13 @@ The `@zotero-suite/translator` package provides intelligent content processing a
 ## Features
 
 - **Dual Input Support**: Process content from URLs or direct source text
+- **AI-Powered Translation**: Two-step AI process for intelligent metadata extraction
 - **Content Extraction**: Advanced parsing for HTML, PDF, and plain text
 - **Metadata Extraction**: Automatic extraction of titles, authors, dates, and descriptions
 - **Type Safety**: Full TypeScript support with comprehensive type definitions
 - **Error Handling**: Detailed error types for different failure scenarios
 - **Configurable**: Flexible configuration options for timeouts, retries, and content limits
+- **Fallback Support**: Graceful fallback to basic extraction when AI is unavailable
 
 ## Installation
 
@@ -29,15 +31,22 @@ import { Translator } from '@zotero-suite/translator';
 const translator = new Translator({
   timeout: 30000,
   maxRetries: 3,
-  debug: false
+  debug: false,
+  ai: {
+    apiKey: 'your-openai-api-key',
+    classificationModel: 'gpt-3.5-turbo',
+    extractionModel: 'gpt-3.5-turbo',
+    temperature: 0.1,
+    maxTokens: 2000,
+  }
 });
 
-// Translate from URL
+// Translate from URL with AI
 const urlResult = await translator.translate({
   url: 'https://example.com/article'
 });
 
-// Translate from source text
+// Translate from source text with AI
 const textResult = await translator.translate({
   sourceText: 'This is the content to translate...'
 });
@@ -91,6 +100,20 @@ interface TranslatorConfig {
   userAgent?: string;
   maxContentLength?: number;
   debug?: boolean;
+  ai?: AIConfig;
+}
+```
+
+#### AIConfig
+
+```typescript
+interface AIConfig {
+  apiKey: string;
+  classificationModel?: string;
+  extractionModel?: string;
+  temperature?: number;
+  maxTokens?: number;
+  baseURL?: string;
 }
 ```
 
@@ -113,6 +136,31 @@ The translator supports two content ingestion paths:
 3. **Text Processing**: Direct text extraction with title inference
 4. **Metadata Extraction**: Extracts available metadata from content
 
+## AI Translation Pipeline
+
+When AI configuration is provided, the translator uses a sophisticated two-step AI process:
+
+### Step 1: Classification
+- Uses OpenAI's language model to analyze content and determine the most appropriate Zotero item type
+- Considers content structure, metadata, and textual patterns
+- Returns item type (e.g., "journalArticle", "webpage", "book", "document")
+
+### Step 2: Extraction
+- Uses LangChain's StructuredOutputParser with dynamically selected Zod schema
+- Schema selection based on the classified item type from Step 1
+- Extracts structured metadata including title, authors, dates, abstract, etc.
+- Employs OutputFixingParser for error recovery and validation
+
+### Step 3: Validation
+- Final validation using Zod schema's `.safeParse()` method
+- Ensures all extracted data conforms to expected types and formats
+- Provides detailed error information for debugging
+
+### Fallback Mechanism
+- If AI translation fails, automatically falls back to basic extraction
+- Ensures robustness and availability even when AI services are unavailable
+- Maintains consistent output format regardless of extraction method
+
 ## Error Handling
 
 The package provides specific error types for different failure scenarios:
@@ -122,6 +170,9 @@ The package provides specific error types for different failure scenarios:
 - `UrlFetchError`: Network and HTTP errors
 - `PdfParseError`: PDF processing errors  
 - `ConfigurationError`: Invalid configuration errors
+- `AIClassificationError`: AI classification failures
+- `AIExtractionError`: AI extraction failures
+- `AIValidationError`: AI validation failures
 
 ## Configuration
 
@@ -133,7 +184,21 @@ The package provides specific error types for different failure scenarios:
   maxRetries: 3,           // 3 retry attempts
   userAgent: 'Zotero-AI-Translator/1.0.0',
   maxContentLength: 50000, // 50k character limit
-  debug: false
+  debug: false,
+  ai: undefined            // AI disabled by default
+}
+```
+
+### AI Configuration
+
+```typescript
+{
+  apiKey: 'your-openai-api-key',    // Required: OpenAI API key
+  classificationModel: 'gpt-3.5-turbo', // Default classification model
+  extractionModel: 'gpt-3.5-turbo',     // Default extraction model
+  temperature: 0.1,                      // Default temperature for consistency
+  maxTokens: 2000,                      // Default token limit
+  baseURL: undefined                    // Optional custom API base URL
 }
 ```
 
@@ -145,19 +210,29 @@ const translator = new Translator({
   maxRetries: 5,           // 5 retry attempts
   userAgent: 'MyApp/1.0.0',
   maxContentLength: 100000, // 100k character limit
-  debug: true              // Enable debug logging
+  debug: true,             // Enable debug logging
+  ai: {
+    apiKey: 'your-openai-api-key',
+    classificationModel: 'gpt-4',
+    extractionModel: 'gpt-4',
+    temperature: 0.2,
+    maxTokens: 4000,
+  }
 });
 ```
 
 ## Development Status
 
-This package is currently in development. The AI translation pipeline using LangChain will be implemented in a future release. The current implementation provides:
+This package provides a complete AI-powered translation pipeline using LangChain.js. The current implementation includes:
 
 - ✅ Complete content ingestion pipeline
 - ✅ Content extraction from URLs and source text
 - ✅ Basic metadata extraction
 - ✅ Type-safe interfaces
-- ⏳ AI-powered translation (coming soon)
+- ✅ AI-powered translation with two-step process (Classification → Extraction → Validation)
+- ✅ LangChain.js integration with OpenAI models
+- ✅ Dynamic Zod schema configuration for structured output
+- ✅ Graceful fallback to basic extraction when AI is unavailable
 
 ## Dependencies
 
@@ -166,6 +241,9 @@ This package is currently in development. The AI translation pipeline using Lang
 - `jsdom`: DOM parsing for HTML content
 - `@mozilla/readability`: Content extraction from HTML
 - `pdf-parse`: PDF text extraction
+- `langchain`: LangChain.js core library for AI orchestration
+- `@langchain/openai`: OpenAI integration for LangChain
+- `zod`: TypeScript-first schema validation
 
 ## License
 

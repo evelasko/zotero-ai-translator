@@ -58,6 +58,50 @@ export interface TranslatorConfig {
    * @default false
    */
   debug?: boolean;
+  
+  /**
+   * AI configuration options
+   */
+  ai?: AIConfig;
+}
+
+/**
+ * AI configuration for LangChain integration
+ */
+export interface AIConfig {
+  /**
+   * OpenAI API key
+   */
+  apiKey: string;
+  
+  /**
+   * OpenAI model to use for classification
+   * @default 'gpt-3.5-turbo'
+   */
+  classificationModel?: string;
+  
+  /**
+   * OpenAI model to use for extraction
+   * @default 'gpt-3.5-turbo'
+   */
+  extractionModel?: string;
+  
+  /**
+   * Temperature for AI responses
+   * @default 0.1
+   */
+  temperature?: number;
+  
+  /**
+   * Maximum tokens for AI responses
+   * @default 2000
+   */
+  maxTokens?: number;
+  
+  /**
+   * Custom base URL for OpenAI API
+   */
+  baseURL?: string;
 }
 
 /**
@@ -192,5 +236,35 @@ export class ConfigurationError extends TranslatorError {
   constructor(message: string) {
     super(message, 'CONFIGURATION_ERROR');
     this.name = 'ConfigurationError';
+  }
+}
+
+/**
+ * AI classification errors
+ */
+export class AIClassificationError extends TranslatorError {
+  constructor(message: string, cause?: Error) {
+    super(message, 'AI_CLASSIFICATION_ERROR', cause);
+    this.name = 'AIClassificationError';
+  }
+}
+
+/**
+ * AI extraction errors
+ */
+export class AIExtractionError extends TranslatorError {
+  constructor(message: string, cause?: Error) {
+    super(message, 'AI_EXTRACTION_ERROR', cause);
+    this.name = 'AIExtractionError';
+  }
+}
+
+/**
+ * AI validation errors
+ */
+export class AIValidationError extends TranslatorError {
+  constructor(message: string, cause?: Error) {
+    super(message, 'AI_VALIDATION_ERROR', cause);
+    this.name = 'AIValidationError';
   }
 }

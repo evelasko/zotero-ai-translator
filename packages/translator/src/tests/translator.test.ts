@@ -2,9 +2,39 @@
  * Tests for the main Translator class
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { Translator } from '../core/translator';
-import { TranslatorConfig, ConfigurationError } from '../types';
+import { TranslatorConfig, AIConfig, ConfigurationError } from '../types';
+
+// Mock LangChain modules to avoid requiring actual API keys in tests
+vi.mock('@langchain/openai', () => ({
+  ChatOpenAI: vi.fn().mockImplementation(() => ({
+    // Mock implementation
+  })),
+}));
+
+vi.mock('langchain/prompts', () => ({
+  PromptTemplate: {
+    fromTemplate: vi.fn().mockReturnValue({
+      pipe: vi.fn().mockReturnValue({
+        invoke: vi.fn(),
+      }),
+    }),
+  },
+}));
+
+vi.mock('langchain/output_parsers', () => ({
+  StructuredOutputParser: {
+    fromZodSchema: vi.fn().mockReturnValue({
+      getFormatInstructions: vi.fn().mockReturnValue('Format instructions'),
+    }),
+  },
+  OutputFixingParser: {
+    fromLLM: vi.fn().mockReturnValue({
+      // Mock parser
+    }),
+  },
+}));
 
 describe('Translator', () => {
   let translator: Translator;
@@ -67,6 +97,47 @@ describe('Translator', () => {
       expect(() => new Translator({ userAgent: '' })).toThrow(ConfigurationError);
       expect(() => new Translator({ userAgent: '   ' })).toThrow(ConfigurationError);
     });
+
+    it('should create translator with AI configuration', () => {
+      const aiConfig: AIConfig = {
+        apiKey: 'test-api-key',
+        classificationModel: 'gpt-3.5-turbo',
+        extractionModel: 'gpt-3.5-turbo',
+        temperature: 0.1,
+        maxTokens: 2000,
+      };
+
+      const configWithAI: TranslatorConfig = {
+        ai: aiConfig,
+      };
+
+      expect(() => new Translator(configWithAI)).not.toThrow();
+    });
+
+    it('should throw error for invalid AI configuration', () => {
+      expect(() => new Translator({ ai: { apiKey: '' } })).toThrow(ConfigurationError);
+      expect(() => new Translator({ ai: { apiKey: '   ' } })).toThrow(ConfigurationError);
+    });
+
+    it('should throw error for invalid AI temperature', () => {
+      expect(() => new Translator({ 
+        ai: { apiKey: 'test-key', temperature: -1 } 
+      })).toThrow(ConfigurationError);
+      
+      expect(() => new Translator({ 
+        ai: { apiKey: 'test-key', temperature: 3 } 
+      })).toThrow(ConfigurationError);
+    });
+
+    it('should throw error for invalid AI max tokens', () => {
+      expect(() => new Translator({ 
+        ai: { apiKey: 'test-key', maxTokens: 0 } 
+      })).toThrow(ConfigurationError);
+      
+      expect(() => new Translator({ 
+        ai: { apiKey: 'test-key', maxTokens: -100 } 
+      })).toThrow(ConfigurationError);
+    });
   });
 
   describe('translate method', () => {
@@ -111,6 +182,44 @@ describe('Translator', () => {
       expect(result.item).toHaveProperty('itemType');
       expect(result.item).toHaveProperty('title');
       expect(result.processing.ingestionMethod).toBe('sourceText');
+    });
+
+    it('should work with AI configuration', async () => {
+      const aiTranslator = new Translator({
+        ai: {
+          apiKey: 'test-api-key',
+          temperature: 0.1,
+          maxTokens: 2000,
+        },
+        debug: false,
+      });
+
+      const validInput = { sourceText: 'This is a research paper about machine learning.' };
+      
+      // Due to mocking, this will fall back to basic extraction
+      const result = await aiTranslator.translate(validInput);
+      
+      expect(result).toHaveProperty('item');
+      expect(result).toHaveProperty('confidence');
+      expect(result.processing.ingestionMethod).toBe('sourceText');
+    });
+
+    it('should fallback to basic extraction when AI fails', async () => {
+      const aiTranslator = new Translator({
+        ai: {
+          apiKey: 'test-api-key',
+        },
+        debug: false,
+      });
+
+      const validInput = { sourceText: 'This is test content.' };
+      
+      // With mocked LangChain, this should fall back to basic extraction
+      const result = await aiTranslator.translate(validInput);
+      
+      expect(result).toHaveProperty('item');
+      expect(result.item).toHaveProperty('itemType');
+      expect(result.item).toHaveProperty('title');
     });
   });
 
