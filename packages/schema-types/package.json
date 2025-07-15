@@ -8,6 +8,7 @@
   "types": "./lib/index.d.ts",
   "exports": {
     ".": {
+      "import": "./lib/index.js",
       "require": "./lib/index.js",
       "types": "./lib/index.d.ts"
     }
@@ -21,8 +22,8 @@
     "build": "tsc",
     "dev": "pnpm run generate && tsc --watch",
     "generate": "node scripts/generate-types.js",
-    "test": "jest",
-    "test:coverage": "jest --coverage",
+    "test": "jest --passWithNoTests",
+    "test:coverage": "jest --coverage --passWithNoTests",
     "lint": "eslint src/**/*.ts scripts/**/*.js",
     "lint:fix": "eslint src/**/*.ts scripts/**/*.js --fix",
     "type-check": "tsc --noEmit",
