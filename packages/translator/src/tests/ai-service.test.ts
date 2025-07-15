@@ -2,9 +2,15 @@
  * Tests for the AI Service
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AIService } from '../core/ai-service';
-import { AIConfig, ExtractedContent, AIClassificationError, AIExtractionError, AIValidationError } from '../types';
+import {
+  AIClassificationError,
+  AIConfig,
+  AIExtractionError,
+  AIValidationError,
+  ExtractedContent,
+} from '../types';
 
 // Mock LangChain modules
 vi.mock('@langchain/openai', () => ({
@@ -13,7 +19,7 @@ vi.mock('@langchain/openai', () => ({
   })),
 }));
 
-vi.mock('langchain/prompts', () => ({
+vi.mock('@langchain/core/prompts', () => ({
   PromptTemplate: {
     fromTemplate: vi.fn().mockReturnValue({
       pipe: vi.fn().mockReturnValue({
@@ -23,7 +29,7 @@ vi.mock('langchain/prompts', () => ({
   },
 }));
 
-vi.mock('langchain/output_parsers', () => ({
+vi.mock('@langchain/core/output_parsers', () => ({
   StructuredOutputParser: {
     fromZodSchema: vi.fn().mockReturnValue({
       getFormatInstructions: vi.fn().mockReturnValue('Format instructions'),
@@ -71,7 +77,7 @@ describe('AIService', () => {
       const minimalConfig: AIConfig = {
         apiKey: 'test-key',
       };
-      
+
       expect(() => new AIService(minimalConfig)).not.toThrow();
     });
 
@@ -84,7 +90,7 @@ describe('AIService', () => {
         ...mockConfig,
         baseURL: 'https://custom-api.example.com',
       };
-      
+
       expect(() => new AIService(configWithBaseURL)).not.toThrow();
     });
   });

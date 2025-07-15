@@ -2,9 +2,9 @@
  * Tests for the main Translator class
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { Translator } from '../core/translator';
-import { TranslatorConfig, AIConfig, ConfigurationError } from '../types';
+import { AIConfig, ConfigurationError, TranslatorConfig } from '../types';
 
 // Mock LangChain modules to avoid requiring actual API keys in tests
 vi.mock('@langchain/openai', () => ({
@@ -13,7 +13,7 @@ vi.mock('@langchain/openai', () => ({
   })),
 }));
 
-vi.mock('langchain/prompts', () => ({
+vi.mock('@langchain/core/prompts', () => ({
   PromptTemplate: {
     fromTemplate: vi.fn().mockReturnValue({
       pipe: vi.fn().mockReturnValue({
@@ -23,7 +23,7 @@ vi.mock('langchain/prompts', () => ({
   },
 }));
 
-vi.mock('langchain/output_parsers', () => ({
+vi.mock('@langchain/core/output_parsers', () => ({
   StructuredOutputParser: {
     fromZodSchema: vi.fn().mockReturnValue({
       getFormatInstructions: vi.fn().mockReturnValue('Format instructions'),
@@ -51,7 +51,7 @@ describe('Translator', () => {
     it('should create translator with default config', () => {
       const defaultTranslator = new Translator();
       expect(defaultTranslator).toBeInstanceOf(Translator);
-      
+
       const config = defaultTranslator.getConfig();
       expect(config.timeout).toBe(30000);
       expect(config.maxRetries).toBe(3);
@@ -68,10 +68,10 @@ describe('Translator', () => {
         maxContentLength: 100000,
         debug: true,
       };
-      
+
       const customTranslator = new Translator(customConfig);
       const config = customTranslator.getConfig();
-      
+
       expect(config.timeout).toBe(10000);
       expect(config.maxRetries).toBe(5);
       expect(config.userAgent).toBe('Custom-Agent/1.0.0');
@@ -120,23 +120,35 @@ describe('Translator', () => {
     });
 
     it('should throw error for invalid AI temperature', () => {
-      expect(() => new Translator({ 
-        ai: { apiKey: 'test-key', temperature: -1 } 
-      })).toThrow(ConfigurationError);
-      
-      expect(() => new Translator({ 
-        ai: { apiKey: 'test-key', temperature: 3 } 
-      })).toThrow(ConfigurationError);
+      expect(
+        () =>
+          new Translator({
+            ai: { apiKey: 'test-key', temperature: -1 },
+          }),
+      ).toThrow(ConfigurationError);
+
+      expect(
+        () =>
+          new Translator({
+            ai: { apiKey: 'test-key', temperature: 3 },
+          }),
+      ).toThrow(ConfigurationError);
     });
 
     it('should throw error for invalid AI max tokens', () => {
-      expect(() => new Translator({ 
-        ai: { apiKey: 'test-key', maxTokens: 0 } 
-      })).toThrow(ConfigurationError);
-      
-      expect(() => new Translator({ 
-        ai: { apiKey: 'test-key', maxTokens: -100 } 
-      })).toThrow(ConfigurationError);
+      expect(
+        () =>
+          new Translator({
+            ai: { apiKey: 'test-key', maxTokens: 0 },
+          }),
+      ).toThrow(ConfigurationError);
+
+      expect(
+        () =>
+          new Translator({
+            ai: { apiKey: 'test-key', maxTokens: -100 },
+          }),
+      ).toThrow(ConfigurationError);
     });
   });
 
@@ -154,7 +166,9 @@ describe('Translator', () => {
     it('should throw error for invalid URL input', async () => {
       await expect(translator.translate({ url: '' })).rejects.toThrow(ConfigurationError);
       await expect(translator.translate({ url: '   ' })).rejects.toThrow(ConfigurationError);
-      await expect(translator.translate({ url: 'invalid-url' })).rejects.toThrow(ConfigurationError);
+      await expect(translator.translate({ url: 'invalid-url' })).rejects.toThrow(
+        ConfigurationError,
+      );
     });
 
     it('should throw error for invalid source text input', async () => {
@@ -171,14 +185,14 @@ describe('Translator', () => {
 
     it('should accept valid source text input', async () => {
       const validInput = { sourceText: 'This is some test content for translation.' };
-      
+
       const result = await translator.translate(validInput);
-      
+
       expect(result).toHaveProperty('item');
       expect(result).toHaveProperty('confidence');
       expect(result).toHaveProperty('extractedContent');
       expect(result).toHaveProperty('processing');
-      
+
       expect(result.item).toHaveProperty('itemType');
       expect(result.item).toHaveProperty('title');
       expect(result.processing.ingestionMethod).toBe('sourceText');
@@ -195,10 +209,10 @@ describe('Translator', () => {
       });
 
       const validInput = { sourceText: 'This is a research paper about machine learning.' };
-      
+
       // Due to mocking, this will fall back to basic extraction
       const result = await aiTranslator.translate(validInput);
-      
+
       expect(result).toHaveProperty('item');
       expect(result).toHaveProperty('confidence');
       expect(result.processing.ingestionMethod).toBe('sourceText');
@@ -213,10 +227,10 @@ describe('Translator', () => {
       });
 
       const validInput = { sourceText: 'This is test content.' };
-      
+
       // With mocked LangChain, this should fall back to basic extraction
       const result = await aiTranslator.translate(validInput);
-      
+
       expect(result).toHaveProperty('item');
       expect(result.item).toHaveProperty('itemType');
       expect(result.item).toHaveProperty('title');
@@ -226,7 +240,7 @@ describe('Translator', () => {
   describe('getConfig method', () => {
     it('should return current configuration', () => {
       const config = translator.getConfig();
-      
+
       expect(config).toHaveProperty('timeout');
       expect(config).toHaveProperty('maxRetries');
       expect(config).toHaveProperty('userAgent');
@@ -237,10 +251,10 @@ describe('Translator', () => {
     it('should return immutable configuration', () => {
       const config = translator.getConfig();
       const originalTimeout = config.timeout;
-      
+
       // Try to modify the returned config
       (config as any).timeout = 999999;
-      
+
       // Original config should remain unchanged
       expect(translator.getConfig().timeout).toBe(originalTimeout);
     });

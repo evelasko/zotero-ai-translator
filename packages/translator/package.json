@@ -29,21 +29,22 @@
     "clean": "rm -rf lib dist"
   },
   "dependencies": {
+    "@langchain/core": "^0.3.30",
+    "@langchain/openai": "^0.6.0",
+    "@mozilla/readability": "^0.6.0",
     "@zotero-suite/schema-types": "file:../schema-types",
-    "axios": "^1.6.0",
-    "jsdom": "^23.0.0",
-    "@mozilla/readability": "^0.4.4",
+    "axios": "^1.10.0",
+    "jsdom": "^26.1.0",
+    "langchain": "^0.3.30",
     "pdf-parse": "^1.1.1",
-    "langchain": "^0.1.0",
-    "@langchain/openai": "^0.0.14",
-    "zod": "^3.22.0"
+    "zod": "^4.0.5"
   },
   "devDependencies": {
-    "@types/jsdom": "^21.1.0",
-    "@types/node": "^20.0.0",
-    "@types/pdf-parse": "^1.1.1",
-    "typescript": "^5.0.0",
-    "vitest": "^1.0.0"
+    "@types/jsdom": "^21.1.7",
+    "@types/node": "^24.0.14",
+    "@types/pdf-parse": "^1.1.5",
+    "typescript": "^5.8.3",
+    "vitest": "^3.2.4"
   },
   "engines": {
     "node": ">=18.0.0"

@@ -2,11 +2,11 @@
  * Content extraction utilities for URL and PDF processing
  */
 
+import { Readability } from '@mozilla/readability';
 import axios, { AxiosRequestConfig } from 'axios';
 import { JSDOM } from 'jsdom';
-import { Readability } from '@mozilla/readability';
 import pdfParse from 'pdf-parse';
-import { ExtractedContent, TranslatorConfig, ContentExtractionError, UrlFetchError, PdfParseError } from '../types';
+import { ContentExtractionError, ExtractedContent, PdfParseError, TranslatorConfig, UrlFetchError } from '../types';
 
 /**
  * Content extractor class for handling URL and PDF content extraction
@@ -59,6 +59,14 @@ export class ContentExtractor {
   async extractFromSourceText(sourceText: string): Promise<ExtractedContent> {
     if (this.config.debug) {
       console.log(`[ContentExtractor] Extracting content from source text (${sourceText.length} chars)`);
+    }
+
+    // Validate that we have meaningful content to extract
+    if (!sourceText || sourceText.trim().length === 0) {
+      throw new ContentExtractionError(
+        'Cannot extract content from empty source text',
+        new Error('Source text is empty or contains only whitespace')
+      );
     }
 
     try {

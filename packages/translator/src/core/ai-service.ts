@@ -2,18 +2,18 @@
  * AI Service for LangChain-powered content translation
  */
 
+import { OutputFixingParser, StructuredOutputParser } from '@langchain/core/output_parsers';
+import { PromptTemplate } from '@langchain/core/prompts';
 import { ChatOpenAI } from '@langchain/openai';
-import { PromptTemplate } from 'langchain/prompts';
-import { OutputFixingParser, StructuredOutputParser } from 'langchain/output_parsers';
-import { z } from 'zod';
 import { ZoteroItemData } from '@zotero-suite/schema-types';
-import { 
-  AIConfig, 
-  RequiredAIConfig,
-  ExtractedContent, 
-  AIClassificationError, 
-  AIExtractionError, 
-  AIValidationError 
+import { z } from 'zod';
+import {
+    AIClassificationError,
+    AIConfig,
+    AIExtractionError,
+    AIValidationError,
+    ExtractedContent,
+    RequiredAIConfig
 } from '../types';
 
 /**

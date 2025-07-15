@@ -51,7 +51,7 @@ vi.mock('@langchain/openai', () => ({
   })),
 }));
 
-vi.mock('langchain/prompts', () => ({
+vi.mock('@langchain/core/prompts', () => ({
   PromptTemplate: {
     fromTemplate: vi.fn().mockReturnValue({
       pipe: vi.fn().mockReturnValue({
@@ -63,7 +63,7 @@ vi.mock('langchain/prompts', () => ({
   },
 }));
 
-vi.mock('langchain/output_parsers', () => ({
+vi.mock('@langchain/core/output_parsers', () => ({
   StructuredOutputParser: {
     fromZodSchema: vi.fn().mockReturnValue({
       getFormatInstructions: vi.fn().mockReturnValue('Format instructions'),
