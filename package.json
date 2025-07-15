@@ -1,78 +1,35 @@
 {
-  "name": "zotero-web-client",
+  "name": "zotero-ai-translator-suite",
   "version": "1.0.0",
-  "type": "module",
-  "description": "A modern, robust, and type-safe Zotero Web API client for TypeScript/JavaScript",
+  "private": true,
+  "description": "A suite of TypeScript packages for AI-powered Zotero translation",
   "author": "Enrique Velasco",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/evelasko/zotero-web-client.git"
+    "url": "https://github.com/evelasko/zotero-ai-translator.git"
   },
-  "bugs": {
-    "url": "https://github.com/evelasko/zotero-web-client/issues"
-  },
-  "homepage": "https://github.com/evelasko/zotero-web-client#readme",
-  "main": "./dist/index.cjs",
-  "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "require": {
-        "types": "./dist/index.d.cts",
-        "default": "./dist/index.cjs"
-      },
-      "import": {
-        "types": "./dist/index.d.ts",
-        "default": "./dist/index.js"
-      }
-    }
-  },
-  "files": [
-    "dist",
-    "README.md",
-    "LICENSE"
+  "workspaces": [
+    "packages/*"
   ],
   "scripts": {
-    "build": "npm run generate && tsup",
-    "generate": "node scripts/generate-types.cjs",
-    "dev": "tsup --watch",
-    "test": "vitest",
-    "test:coverage": "vitest run --coverage",
-    "test:ui": "vitest --ui",
-    "type-check": "tsc --noEmit",
-    "lint": "eslint src --ext .ts,.js",
-    "lint:fix": "eslint src --ext .ts,.js --fix",
-    "validate": "npm run type-check && npm run lint && npm run test -- --run",
-    "prepublishOnly": "npm run validate && npm run build"
+    "build": "turbo build",
+    "dev": "turbo dev",
+    "test": "turbo test",
+    "test:coverage": "turbo test:coverage",
+    "lint": "turbo lint",
+    "lint:fix": "turbo lint:fix",
+    "type-check": "turbo type-check",
+    "clean": "turbo clean",
+    "generate": "turbo generate"
   },
-  "keywords": [
-    "zotero",
-    "api",
-    "client",
-    "typescript",
-    "research",
-    "bibliography",
-    "citations"
-  ],
   "devDependencies": {
-    "@eslint/js": "^9.0.0",
-    "@types/node": "^20.0.0",
-    "@vitest/coverage-v8": "^1.0.0",
-    "@vitest/ui": "^1.0.0",
-    "eslint": "^9.0.0",
-    "json-schema-to-typescript": "^13.0.0",
-    "json-schema-to-zod": "^2.0.0",
-    "msw": "^2.0.0",
-    "tsup": "^8.0.0",
-    "typescript": "^5.0.0",
-    "typescript-eslint": "^8.0.0",
-    "vitest": "^1.0.0"
-  },
-  "dependencies": {
-    "zod": "^3.22.0"
+    "turbo": "^1.10.0",
+    "typescript": "^5.0.0"
   },
   "engines": {
-    "node": ">=18.0.0"
-  }
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "packageManager": "npm@8.0.0"
 }

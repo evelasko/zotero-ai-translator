@@ -1,0 +1,58 @@
+{
+  "name": "@zotero-suite/schema-types",
+  "version": "1.0.0",
+  "description": "Zod schemas and TypeScript types generated from the official Zotero schema",
+  "author": "Enrique Velasco",
+  "license": "MIT",
+  "main": "./lib/index.js",
+  "types": "./lib/index.d.ts",
+  "exports": {
+    ".": {
+      "require": "./lib/index.js",
+      "types": "./lib/index.d.ts"
+    }
+  },
+  "files": [
+    "lib",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "npm run generate && tsc",
+    "dev": "npm run generate && tsc --watch",
+    "generate": "node scripts/generate-types.js",
+    "test": "jest",
+    "test:coverage": "jest --coverage",
+    "lint": "eslint src --ext .ts,.js",
+    "lint:fix": "eslint src --ext .ts,.js --fix",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf lib dist",
+    "prebuild": "npm run generate"
+  },
+  "dependencies": {
+    "zod": "^3.22.0"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.0.0",
+    "@types/node": "^20.0.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "eslint": "^8.0.0",
+    "jest": "^29.0.0",
+    "json-schema-to-typescript": "^13.0.0",
+    "json-schema-to-zod": "^2.0.0",
+    "ts-jest": "^29.0.0",
+    "typescript": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "zotero",
+    "schema",
+    "types",
+    "typescript",
+    "zod",
+    "validation"
+  ]
+}

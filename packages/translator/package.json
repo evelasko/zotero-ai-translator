@@ -1,0 +1,61 @@
+{
+  "name": "@zotero-suite/translator",
+  "version": "1.0.0",
+  "description": "AI-powered content translation service for Zotero metadata extraction",
+  "author": "Enrique Velasco",
+  "license": "MIT",
+  "main": "./lib/index.js",
+  "types": "./lib/index.d.ts",
+  "exports": {
+    ".": {
+      "require": "./lib/index.js",
+      "types": "./lib/index.d.ts"
+    }
+  },
+  "files": [
+    "lib",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest --coverage",
+    "lint": "eslint src --ext .ts,.js",
+    "lint:fix": "eslint src --ext .ts,.js --fix",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf lib dist"
+  },
+  "dependencies": {
+    "@zotero-suite/schema-types": "workspace:*",
+    "axios": "^1.6.0",
+    "jsdom": "^23.0.0",
+    "@mozilla/readability": "^0.4.4",
+    "pdf-parse": "^1.1.1"
+  },
+  "devDependencies": {
+    "@types/jsdom": "^21.1.0",
+    "@types/node": "^20.0.0",
+    "@types/pdf-parse": "^1.1.1",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "eslint": "^8.0.0",
+    "typescript": "^5.0.0",
+    "vitest": "^1.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "zotero",
+    "ai",
+    "translation",
+    "metadata",
+    "extraction",
+    "typescript",
+    "research",
+    "bibliography"
+  ]
+}

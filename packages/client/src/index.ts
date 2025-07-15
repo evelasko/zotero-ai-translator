@@ -1,0 +1,148 @@
+/**
+ * Main entry point for the Zotero Web API client
+ */
+
+// Export the main client class and factory function
+export { ZoteroClient, ZoteroClientConfig, createClient } from './core/client';
+
+// Export HTTP client and related types
+export { 
+  ZoteroHttpClient, 
+  ZoteroHttpClientConfig, 
+  ZoteroResponse, 
+  PaginationInfo, 
+  RequestOptions 
+} from './core/http';
+
+// Export authentication classes and functions
+export { 
+  ZoteroAuth, 
+  ZoteroAuthConfig, 
+  createAuth, 
+  isValidAuthConfig 
+} from './core/auth';
+
+// Export all error classes and utility functions
+export {
+  ZoteroAPIError,
+  ZoteroAuthenticationError,
+  ZoteroNotFoundError,
+  ZoteroRateLimitError,
+  ZoteroValidationError,
+  ZoteroConflictError,
+  ZoteroForbiddenError,
+  ZoteroBadRequestError,
+  ZoteroServerError,
+  ZoteroNetworkError,
+  createErrorFromResponse,
+  isZoteroAPIError,
+  isRateLimitError,
+  isAuthenticationError,
+  isValidationError,
+  isNetworkError
+} from './core/errors';
+
+// Export API classes and their interfaces
+export { 
+  ItemsAPI, 
+  ItemsQueryParams, 
+  ItemsCreateData, 
+  ItemsUpdateData, 
+  ItemsBatchResponse 
+} from './api/items';
+
+export { 
+  CollectionsAPI, 
+  CollectionsQueryParams, 
+  CollectionsBatchResponse 
+} from './api/collections';
+
+// Re-export types and schemas from the schema-types package
+export {
+  ZoteroItem,
+  ZoteroItemData,
+  ZoteroItemSchema,
+  ZoteroCollection,
+  ZoteroCollectionData,
+  ZoteroCollectionSchema,
+  ZoteroItemType,
+  ZoteroField,
+  ZoteroCreatorType,
+  ZoteroCreator,
+  ZoteroTag,
+  ZoteroNote,
+  ZoteroAttachment,
+  ZoteroRelation,
+  ZoteroDateString,
+  ZoteroDateObject,
+  ZoteroLibrary,
+  ZoteroGroup,
+  ZoteroUser,
+  ZoteroVersion,
+  ZoteroKey,
+  ZoteroData,
+  ZoteroMeta,
+  ZoteroLinks,
+  ZoteroItemTemplate,
+  ZoteroCreatorTemplate,
+  ZoteroFieldTemplate,
+  ZoteroItemTypeTemplate,
+  ZoteroTemplate,
+  ZoteroCollectionTemplate,
+  ZoteroDeletedContent,
+  ZoteroSettings,
+  ZoteroKeyPermissions,
+  ZoteroGroupMetadata,
+  ZoteroSearchQuery,
+  ZoteroSearchResult,
+  ZoteroFulltextContent,
+  ZoteroAnnotation,
+  ZoteroHighlight,
+  ZoteroImage,
+  ZoteroInk,
+  ZoteroNote as ZoteroItemNote,
+  ZoteroSync,
+  ZoteroSyncError,
+  ZoteroAPIResponse,
+  ZoteroAPIError as ZoteroAPIErrorType,
+  ZoteroWriteToken,
+  ZoteroItemDataSchema,
+  ZoteroCollectionDataSchema,
+  ZoteroLibrarySchema,
+  ZoteroGroupSchema,
+  ZoteroUserSchema,
+  ZoteroCreatorSchema,
+  ZoteroTagSchema,
+  ZoteroNoteSchema,
+  ZoteroAttachmentSchema,
+  ZoteroRelationSchema,
+  ZoteroDateStringSchema,
+  ZoteroDateObjectSchema,
+  ZoteroItemTypeSchema,
+  ZoteroFieldSchema,
+  ZoteroCreatorTypeSchema,
+  ZoteroItemTemplateSchema,
+  ZoteroCreatorTemplateSchema,
+  ZoteroFieldTemplateSchema,
+  ZoteroItemTypeTemplateSchema,
+  ZoteroTemplateSchema,
+  ZoteroCollectionTemplateSchema,
+  ZoteroDeletedContentSchema,
+  ZoteroSettingsSchema,
+  ZoteroKeyPermissionsSchema,
+  ZoteroGroupMetadataSchema,
+  ZoteroSearchQuerySchema,
+  ZoteroSearchResultSchema,
+  ZoteroFulltextContentSchema,
+  ZoteroAnnotationSchema,
+  ZoteroHighlightSchema,
+  ZoteroImageSchema,
+  ZoteroInkSchema,
+  ZoteroSyncSchema,
+  ZoteroSyncErrorSchema,
+  ZoteroAPIResponseSchema,
+  ZoteroWriteTokenSchema
+} from '@zotero-suite/schema-types';
+
+// Default export for convenience
+export { ZoteroClient as default } from './core/client';
