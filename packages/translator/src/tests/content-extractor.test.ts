@@ -115,7 +115,7 @@ describe('ContentExtractor', () => {
 
     it('should not extract title from very long first line', async () => {
       const longFirstLine = 'A'.repeat(250); // Too long to be a title
-      const textWithLongFirstLine = longFirstLine + '\n\nThis is the actual content.';
+      const textWithLongFirstLine = `${longFirstLine  }\n\nThis is the actual content.`;
       
       const result = await extractor.extractFromSourceText(textWithLongFirstLine);
       

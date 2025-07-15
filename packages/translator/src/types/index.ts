@@ -105,6 +105,18 @@ export interface AIConfig {
 }
 
 /**
+ * Required AI configuration with all optional fields resolved
+ */
+export interface RequiredAIConfig {
+  apiKey: string;
+  classificationModel: string;
+  extractionModel: string;
+  temperature: number;
+  maxTokens: number;
+  baseURL?: string;
+}
+
+/**
  * Extracted content from URL or source text
  */
 export interface ExtractedContent {

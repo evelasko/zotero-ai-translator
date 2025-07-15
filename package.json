@@ -9,27 +9,51 @@
     "type": "git",
     "url": "https://github.com/evelasko/zotero-ai-translator.git"
   },
-  "workspaces": [
-    "packages/*"
-  ],
   "scripts": {
+    "preinstall": "npx only-allow pnpm",
     "build": "turbo build",
+    "build:watch": "turbo build --watch",
     "dev": "turbo dev",
     "test": "turbo test",
+    "test:watch": "turbo test:watch",
     "test:coverage": "turbo test:coverage",
     "lint": "turbo lint",
     "lint:fix": "turbo lint:fix",
     "type-check": "turbo type-check",
     "clean": "turbo clean",
-    "generate": "turbo generate"
+    "generate": "turbo generate",
+    "validate": "pnpm type-check && pnpm build && pnpm test",
+    "fresh": "pnpm clean && pnpm install && pnpm build",
+    "deps:update": "pnpm update --interactive --recursive",
+    "deps:check": "pnpm outdated --recursive",
+    "workspace:graph": "pnpm ls --depth=0 --json | jq '.[] | {name, dependencies: (.dependencies // {} | keys)}'",
+    "turbo:trace": "turbo build --dry-run",
+    "prepare": "husky install",
+    "pre-commit": "lint-staged"
+  },
+  "lint-staged": {
+    "packages/**/*.{ts,js}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "packages/**/*.{json,md,yml,yaml}": [
+      "prettier --write"
+    ]
   },
   "devDependencies": {
-    "turbo": "^1.10.0",
-    "typescript": "^5.0.0"
+    "@typescript-eslint/eslint-plugin": "^8.37.0",
+    "@typescript-eslint/parser": "^8.37.0",
+    "eslint": "^9.31.0",
+    "globals": "^16.3.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.1.2",
+    "prettier": "^3.6.2",
+    "turbo": "^2.5.4",
+    "typescript": "^5.8.3"
   },
   "engines": {
     "node": ">=18.0.0",
-    "npm": ">=8.0.0"
+    "pnpm": ">=8.0.0"
   },
-  "packageManager": "npm@8.0.0"
+  "packageManager": "pnpm@9.15.0"
 }

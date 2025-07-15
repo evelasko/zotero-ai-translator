@@ -8,6 +8,7 @@ import { TranslationInput, TranslationResult, TranslatorConfig } from '../types'
 export declare class Translator {
     private readonly config;
     private readonly contentExtractor;
+    private readonly aiService?;
     constructor(config?: TranslatorConfig);
     /**
      * Main translation method that processes input and returns Zotero item data
@@ -23,10 +24,16 @@ export declare class Translator {
     /**
      * AI Translation Pipeline - converts extracted content to Zotero item data
      *
-     * NOTE: This is a placeholder implementation. The actual AI logic using LangChain
-     * will be implemented in a future step.
+     * This method implements the two-step AI translation process:
+     * 1. Classification: Determine the appropriate Zotero item type
+     * 2. Extraction: Extract structured metadata using LangChain with dynamic schemas
+     * 3. Validation: Validate the result using Zod safeParse
      */
     private translateToZoteroItem;
+    /**
+     * Basic fallback extraction when AI is not available or fails
+     */
+    private basicFallbackExtraction;
     /**
      * Infer item type based on content characteristics
      */

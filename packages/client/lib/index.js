@@ -3,9 +3,8 @@
  * Main entry point for the Zotero Web API client
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ZoteroItemTemplate = exports.ZoteroLinks = exports.ZoteroMeta = exports.ZoteroData = exports.ZoteroKey = exports.ZoteroVersion = exports.ZoteroUser = exports.ZoteroGroup = exports.ZoteroLibrary = exports.ZoteroDateObject = exports.ZoteroDateString = exports.ZoteroRelation = exports.ZoteroAttachment = exports.ZoteroNote = exports.ZoteroTag = exports.ZoteroCreator = exports.ZoteroCreatorType = exports.ZoteroField = exports.ZoteroItemType = exports.ZoteroCollectionSchema = exports.ZoteroCollectionData = exports.ZoteroCollection = exports.ZoteroItemSchema = exports.ZoteroItemData = exports.ZoteroItem = exports.CollectionsAPI = exports.ItemsAPI = exports.isNetworkError = exports.isValidationError = exports.isAuthenticationError = exports.isRateLimitError = exports.isZoteroAPIError = exports.createErrorFromResponse = exports.ZoteroNetworkError = exports.ZoteroServerError = exports.ZoteroBadRequestError = exports.ZoteroForbiddenError = exports.ZoteroConflictError = exports.ZoteroValidationError = exports.ZoteroRateLimitError = exports.ZoteroNotFoundError = exports.ZoteroAuthenticationError = exports.ZoteroAPIError = exports.createBearerAuth = exports.createAPIKeyAuth = exports.createAuth = exports.ZoteroAuth = exports.ZoteroHttpClient = exports.createClient = exports.ZoteroClient = void 0;
-exports.ZoteroFulltextContentSchema = exports.ZoteroSearchResultSchema = exports.ZoteroSearchQuerySchema = exports.ZoteroGroupMetadataSchema = exports.ZoteroKeyPermissionsSchema = exports.ZoteroSettingsSchema = exports.ZoteroDeletedContentSchema = exports.ZoteroCollectionTemplateSchema = exports.ZoteroTemplateSchema = exports.ZoteroItemTypeTemplateSchema = exports.ZoteroFieldTemplateSchema = exports.ZoteroCreatorTemplateSchema = exports.ZoteroItemTemplateSchema = exports.ZoteroCreatorTypeSchema = exports.ZoteroFieldSchema = exports.ZoteroItemTypeSchema = exports.ZoteroDateObjectSchema = exports.ZoteroDateStringSchema = exports.ZoteroRelationSchema = exports.ZoteroAttachmentSchema = exports.ZoteroNoteSchema = exports.ZoteroTagSchema = exports.ZoteroCreatorSchema = exports.ZoteroUserSchema = exports.ZoteroGroupSchema = exports.ZoteroLibrarySchema = exports.ZoteroCollectionDataSchema = exports.ZoteroItemDataSchema = exports.ZoteroWriteToken = exports.ZoteroAPIErrorType = exports.ZoteroAPIResponse = exports.ZoteroSyncError = exports.ZoteroSync = exports.ZoteroItemNote = exports.ZoteroInk = exports.ZoteroImage = exports.ZoteroHighlight = exports.ZoteroAnnotation = exports.ZoteroFulltextContent = exports.ZoteroSearchResult = exports.ZoteroSearchQuery = exports.ZoteroGroupMetadata = exports.ZoteroKeyPermissions = exports.ZoteroSettings = exports.ZoteroDeletedContent = exports.ZoteroCollectionTemplate = exports.ZoteroTemplate = exports.ZoteroItemTypeTemplate = exports.ZoteroFieldTemplate = exports.ZoteroCreatorTemplate = void 0;
-exports.default = exports.ZoteroWriteTokenSchema = exports.ZoteroAPIResponseSchema = exports.ZoteroSyncErrorSchema = exports.ZoteroSyncSchema = exports.ZoteroInkSchema = exports.ZoteroImageSchema = exports.ZoteroHighlightSchema = exports.ZoteroAnnotationSchema = void 0;
+exports.ZoteroKeyPermissionsSchema = exports.ZoteroSettingsSchema = exports.ZoteroDeletedContentSchema = exports.ZoteroCollectionTemplateSchema = exports.ZoteroTemplateSchema = exports.ZoteroItemTypeTemplateSchema = exports.ZoteroFieldTemplateSchema = exports.ZoteroCreatorTemplateSchema = exports.ZoteroItemTemplateSchema = exports.ZoteroCreatorTypeSchema = exports.ZoteroFieldSchema = exports.ZoteroItemTypeSchema = exports.ZoteroDateObjectSchema = exports.ZoteroDateStringSchema = exports.ZoteroRelationSchema = exports.ZoteroAttachmentSchema = exports.ZoteroNoteSchema = exports.ZoteroTagSchema = exports.ZoteroCreatorSchema = exports.ZoteroUserSchema = exports.ZoteroGroupSchema = exports.ZoteroLibrarySchema = exports.ZoteroCollectionDataSchema = exports.ZoteroItemDataSchema = exports.ZoteroCollectionSchema = exports.ZoteroItemSchema = exports.CollectionsAPI = exports.ItemsAPI = exports.isNetworkError = exports.isValidationError = exports.isAuthenticationError = exports.isRateLimitError = exports.isZoteroAPIError = exports.createErrorFromResponse = exports.ZoteroNetworkError = exports.ZoteroServerError = exports.ZoteroBadRequestError = exports.ZoteroForbiddenError = exports.ZoteroConflictError = exports.ZoteroValidationError = exports.ZoteroRateLimitError = exports.ZoteroNotFoundError = exports.ZoteroAuthenticationError = exports.ZoteroAPIError = exports.isValidAuthConfig = exports.createAuth = exports.ZoteroAuth = exports.ZoteroHttpClient = exports.createClient = exports.ZoteroClient = void 0;
+exports.default = exports.ZoteroWriteTokenSchema = exports.ZoteroAPIResponseSchema = exports.ZoteroSyncErrorSchema = exports.ZoteroSyncSchema = exports.ZoteroInkSchema = exports.ZoteroImageSchema = exports.ZoteroHighlightSchema = exports.ZoteroAnnotationSchema = exports.ZoteroFulltextContentSchema = exports.ZoteroSearchResultSchema = exports.ZoteroSearchQuerySchema = exports.ZoteroGroupMetadataSchema = void 0;
 // Export the main client class and factory function
 var client_1 = require("./core/client");
 Object.defineProperty(exports, "ZoteroClient", { enumerable: true, get: function () { return client_1.ZoteroClient; } });
@@ -17,8 +16,7 @@ Object.defineProperty(exports, "ZoteroHttpClient", { enumerable: true, get: func
 var auth_1 = require("./core/auth");
 Object.defineProperty(exports, "ZoteroAuth", { enumerable: true, get: function () { return auth_1.ZoteroAuth; } });
 Object.defineProperty(exports, "createAuth", { enumerable: true, get: function () { return auth_1.createAuth; } });
-Object.defineProperty(exports, "createAPIKeyAuth", { enumerable: true, get: function () { return auth_1.createAPIKeyAuth; } });
-Object.defineProperty(exports, "createBearerAuth", { enumerable: true, get: function () { return auth_1.createBearerAuth; } });
+Object.defineProperty(exports, "isValidAuthConfig", { enumerable: true, get: function () { return auth_1.isValidAuthConfig; } });
 // Export all error classes and utility functions
 var errors_1 = require("./core/errors");
 Object.defineProperty(exports, "ZoteroAPIError", { enumerable: true, get: function () { return errors_1.ZoteroAPIError; } });
@@ -44,53 +42,8 @@ var collections_1 = require("./api/collections");
 Object.defineProperty(exports, "CollectionsAPI", { enumerable: true, get: function () { return collections_1.CollectionsAPI; } });
 // Re-export types and schemas from the schema-types package
 var schema_types_1 = require("@zotero-suite/schema-types");
-Object.defineProperty(exports, "ZoteroItem", { enumerable: true, get: function () { return schema_types_1.ZoteroItem; } });
-Object.defineProperty(exports, "ZoteroItemData", { enumerable: true, get: function () { return schema_types_1.ZoteroItemData; } });
 Object.defineProperty(exports, "ZoteroItemSchema", { enumerable: true, get: function () { return schema_types_1.ZoteroItemSchema; } });
-Object.defineProperty(exports, "ZoteroCollection", { enumerable: true, get: function () { return schema_types_1.ZoteroCollection; } });
-Object.defineProperty(exports, "ZoteroCollectionData", { enumerable: true, get: function () { return schema_types_1.ZoteroCollectionData; } });
 Object.defineProperty(exports, "ZoteroCollectionSchema", { enumerable: true, get: function () { return schema_types_1.ZoteroCollectionSchema; } });
-Object.defineProperty(exports, "ZoteroItemType", { enumerable: true, get: function () { return schema_types_1.ZoteroItemType; } });
-Object.defineProperty(exports, "ZoteroField", { enumerable: true, get: function () { return schema_types_1.ZoteroField; } });
-Object.defineProperty(exports, "ZoteroCreatorType", { enumerable: true, get: function () { return schema_types_1.ZoteroCreatorType; } });
-Object.defineProperty(exports, "ZoteroCreator", { enumerable: true, get: function () { return schema_types_1.ZoteroCreator; } });
-Object.defineProperty(exports, "ZoteroTag", { enumerable: true, get: function () { return schema_types_1.ZoteroTag; } });
-Object.defineProperty(exports, "ZoteroNote", { enumerable: true, get: function () { return schema_types_1.ZoteroNote; } });
-Object.defineProperty(exports, "ZoteroAttachment", { enumerable: true, get: function () { return schema_types_1.ZoteroAttachment; } });
-Object.defineProperty(exports, "ZoteroRelation", { enumerable: true, get: function () { return schema_types_1.ZoteroRelation; } });
-Object.defineProperty(exports, "ZoteroDateString", { enumerable: true, get: function () { return schema_types_1.ZoteroDateString; } });
-Object.defineProperty(exports, "ZoteroDateObject", { enumerable: true, get: function () { return schema_types_1.ZoteroDateObject; } });
-Object.defineProperty(exports, "ZoteroLibrary", { enumerable: true, get: function () { return schema_types_1.ZoteroLibrary; } });
-Object.defineProperty(exports, "ZoteroGroup", { enumerable: true, get: function () { return schema_types_1.ZoteroGroup; } });
-Object.defineProperty(exports, "ZoteroUser", { enumerable: true, get: function () { return schema_types_1.ZoteroUser; } });
-Object.defineProperty(exports, "ZoteroVersion", { enumerable: true, get: function () { return schema_types_1.ZoteroVersion; } });
-Object.defineProperty(exports, "ZoteroKey", { enumerable: true, get: function () { return schema_types_1.ZoteroKey; } });
-Object.defineProperty(exports, "ZoteroData", { enumerable: true, get: function () { return schema_types_1.ZoteroData; } });
-Object.defineProperty(exports, "ZoteroMeta", { enumerable: true, get: function () { return schema_types_1.ZoteroMeta; } });
-Object.defineProperty(exports, "ZoteroLinks", { enumerable: true, get: function () { return schema_types_1.ZoteroLinks; } });
-Object.defineProperty(exports, "ZoteroItemTemplate", { enumerable: true, get: function () { return schema_types_1.ZoteroItemTemplate; } });
-Object.defineProperty(exports, "ZoteroCreatorTemplate", { enumerable: true, get: function () { return schema_types_1.ZoteroCreatorTemplate; } });
-Object.defineProperty(exports, "ZoteroFieldTemplate", { enumerable: true, get: function () { return schema_types_1.ZoteroFieldTemplate; } });
-Object.defineProperty(exports, "ZoteroItemTypeTemplate", { enumerable: true, get: function () { return schema_types_1.ZoteroItemTypeTemplate; } });
-Object.defineProperty(exports, "ZoteroTemplate", { enumerable: true, get: function () { return schema_types_1.ZoteroTemplate; } });
-Object.defineProperty(exports, "ZoteroCollectionTemplate", { enumerable: true, get: function () { return schema_types_1.ZoteroCollectionTemplate; } });
-Object.defineProperty(exports, "ZoteroDeletedContent", { enumerable: true, get: function () { return schema_types_1.ZoteroDeletedContent; } });
-Object.defineProperty(exports, "ZoteroSettings", { enumerable: true, get: function () { return schema_types_1.ZoteroSettings; } });
-Object.defineProperty(exports, "ZoteroKeyPermissions", { enumerable: true, get: function () { return schema_types_1.ZoteroKeyPermissions; } });
-Object.defineProperty(exports, "ZoteroGroupMetadata", { enumerable: true, get: function () { return schema_types_1.ZoteroGroupMetadata; } });
-Object.defineProperty(exports, "ZoteroSearchQuery", { enumerable: true, get: function () { return schema_types_1.ZoteroSearchQuery; } });
-Object.defineProperty(exports, "ZoteroSearchResult", { enumerable: true, get: function () { return schema_types_1.ZoteroSearchResult; } });
-Object.defineProperty(exports, "ZoteroFulltextContent", { enumerable: true, get: function () { return schema_types_1.ZoteroFulltextContent; } });
-Object.defineProperty(exports, "ZoteroAnnotation", { enumerable: true, get: function () { return schema_types_1.ZoteroAnnotation; } });
-Object.defineProperty(exports, "ZoteroHighlight", { enumerable: true, get: function () { return schema_types_1.ZoteroHighlight; } });
-Object.defineProperty(exports, "ZoteroImage", { enumerable: true, get: function () { return schema_types_1.ZoteroImage; } });
-Object.defineProperty(exports, "ZoteroInk", { enumerable: true, get: function () { return schema_types_1.ZoteroInk; } });
-Object.defineProperty(exports, "ZoteroItemNote", { enumerable: true, get: function () { return schema_types_1.ZoteroNote; } });
-Object.defineProperty(exports, "ZoteroSync", { enumerable: true, get: function () { return schema_types_1.ZoteroSync; } });
-Object.defineProperty(exports, "ZoteroSyncError", { enumerable: true, get: function () { return schema_types_1.ZoteroSyncError; } });
-Object.defineProperty(exports, "ZoteroAPIResponse", { enumerable: true, get: function () { return schema_types_1.ZoteroAPIResponse; } });
-Object.defineProperty(exports, "ZoteroAPIErrorType", { enumerable: true, get: function () { return schema_types_1.ZoteroAPIError; } });
-Object.defineProperty(exports, "ZoteroWriteToken", { enumerable: true, get: function () { return schema_types_1.ZoteroWriteToken; } });
 Object.defineProperty(exports, "ZoteroItemDataSchema", { enumerable: true, get: function () { return schema_types_1.ZoteroItemDataSchema; } });
 Object.defineProperty(exports, "ZoteroCollectionDataSchema", { enumerable: true, get: function () { return schema_types_1.ZoteroCollectionDataSchema; } });
 Object.defineProperty(exports, "ZoteroLibrarySchema", { enumerable: true, get: function () { return schema_types_1.ZoteroLibrarySchema; } });

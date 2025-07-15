@@ -7,3 +7,5 @@ dist
 .env.production.local
 .claude/
 coverage/
+# Turborepo
+.turbo

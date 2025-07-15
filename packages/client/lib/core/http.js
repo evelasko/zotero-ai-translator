@@ -37,13 +37,13 @@ class ZoteroHttpClient {
             writable: true,
             value: void 0
         });
-        this.baseURL = config.baseURL || 'https://api.zotero.org';
-        this.timeout = config.timeout || 30000; // 30 seconds
-        this.retries = config.retries || 3;
+        this.baseURL = config.baseURL ?? 'https://api.zotero.org';
+        this.timeout = config.timeout ?? 30000; // 30 seconds
+        this.retries = config.retries ?? 3;
         this.auth = config.auth;
         this.defaultHeaders = {
             'Content-Type': 'application/json',
-            'Accept': 'application/json',
+            Accept: 'application/json',
             'User-Agent': '@zotero-suite/client@1.0.0',
             'Zotero-API-Version': '3',
             ...config.defaultHeaders,
@@ -56,15 +56,14 @@ class ZoteroHttpClient {
         const url = this.buildURL(endpoint, options.params);
         const headers = this.buildHeaders(options.headers);
         const fetchOptions = {
-            method: options.method || 'GET',
+            method: options.method ?? 'GET',
             headers,
             signal: this.createAbortSignal(options.timeout),
         };
         // Add body for non-GET requests
         if (options.body && options.method !== 'GET') {
-            fetchOptions.body = typeof options.body === 'string'
-                ? options.body
-                : JSON.stringify(options.body);
+            fetchOptions.body =
+                typeof options.body === 'string' ? options.body : JSON.stringify(options.body);
         }
         return this.executeRequest(url, fetchOptions, options.retries);
     }
@@ -158,7 +157,7 @@ class ZoteroHttpClient {
      */
     createAbortSignal(timeout) {
         const controller = new AbortController();
-        const timeoutMs = timeout || this.timeout;
+        const timeoutMs = timeout ?? this.timeout;
         setTimeout(() => controller.abort(), timeoutMs);
         return controller.signal;
     }
@@ -185,7 +184,7 @@ class ZoteroHttpClient {
             }
             catch (error) {
                 lastError = error instanceof Error ? error : new Error(String(error));
-                // Don't retry on authentication errors or client errors (4xx) 
+                // Don't retry on authentication errors or client errors (4xx)
                 // Note: 429 should be retried, but for testing purposes we'll throw immediately
                 if (error instanceof Error && 'statusCode' in error) {
                     const statusCode = error.statusCode;
@@ -199,7 +198,7 @@ class ZoteroHttpClient {
                 }
             }
         }
-        throw new errors_1.ZoteroNetworkError(`Request failed after ${retries + 1} attempts`, lastError || undefined);
+        throw new errors_1.ZoteroNetworkError(`Request failed after ${retries + 1} attempts`, lastError ?? undefined);
     }
     /**
      * Parse response body based on content type
@@ -233,7 +232,9 @@ class ZoteroHttpClient {
             const match = entry.match(/<([^>]+)>; rel="([^"]+)"/);
             if (match) {
                 const [, url, rel] = match;
-                if (url && rel && (rel === 'self' || rel === 'next' || rel === 'prev' || rel === 'first' || rel === 'last')) {
+                if (url &&
+                    rel &&
+                    (rel === 'self' || rel === 'next' || rel === 'prev' || rel === 'first' || rel === 'last')) {
                     links[rel] = url;
                 }
             }

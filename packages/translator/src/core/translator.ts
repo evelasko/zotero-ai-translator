@@ -2,7 +2,7 @@
  * Main Translator class for AI-powered Zotero metadata extraction
  */
 
-import { ZoteroItemData } from '@zotero-suite/schema-types';
+import { ZoteroItemData, ZoteroItemType } from '@zotero-suite/schema-types';
 import { 
   TranslationInput, 
   TranslationResult, 
@@ -209,7 +209,7 @@ export class Translator {
   /**
    * Infer item type based on content characteristics
    */
-  private inferItemType(content: ExtractedContent): string {
+  private inferItemType(content: ExtractedContent): ZoteroItemType {
     if (content.contentType === 'application/pdf') {
       return 'document';
     }
@@ -233,10 +233,10 @@ export class Translator {
     const lastSpaceIndex = excerpt.lastIndexOf(' ');
     
     if (lastSpaceIndex > maxLength * 0.8) {
-      return excerpt.substring(0, lastSpaceIndex) + '...';
+      return `${excerpt.substring(0, lastSpaceIndex)  }...`;
     }
     
-    return excerpt + '...';
+    return `${excerpt  }...`;
   }
 
   /**
@@ -308,6 +308,6 @@ export class Translator {
    * Get current configuration
    */
   getConfig(): Readonly<Required<TranslatorConfig>> {
-    return { ...this.config };
+    return { ...this.config } as Readonly<Required<TranslatorConfig>>;
   }
 }

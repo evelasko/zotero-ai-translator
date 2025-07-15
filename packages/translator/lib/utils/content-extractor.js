@@ -24,6 +24,7 @@ class ContentExtractor {
             userAgent: config.userAgent ?? 'Zotero-AI-Translator/1.0.0',
             maxContentLength: config.maxContentLength ?? 50000,
             debug: config.debug ?? false,
+            ai: config.ai,
         };
     }
     /**
@@ -120,7 +121,7 @@ class ContentExtractor {
             let text = article.textContent || '';
             // Truncate if too long
             if (text.length > this.config.maxContentLength) {
-                text = text.substring(0, this.config.maxContentLength) + '...';
+                text = `${text.substring(0, this.config.maxContentLength)}...`;
             }
             // Extract additional metadata
             const metadata = {};
@@ -168,7 +169,7 @@ class ContentExtractor {
             let text = data.text || '';
             // Truncate if too long
             if (text.length > this.config.maxContentLength) {
-                text = text.substring(0, this.config.maxContentLength) + '...';
+                text = `${text.substring(0, this.config.maxContentLength)}...`;
             }
             // Extract metadata from PDF info
             const metadata = {};
@@ -200,14 +201,16 @@ class ContentExtractor {
      */
     extractFromText(text, url, contentType) {
         try {
-            let textContent = text instanceof Buffer ? text.toString('utf-8') : text;
-            // Truncate if too long
-            if (textContent.length > this.config.maxContentLength) {
-                textContent = textContent.substring(0, this.config.maxContentLength) + '...';
+            // Ensure text is always a string
+            const textContent = (text instanceof Buffer ? text.toString('utf-8') : text);
+            // Truncate if too long  
+            let processedText = textContent;
+            if (processedText.length > this.config.maxContentLength) {
+                processedText = `${processedText.substring(0, this.config.maxContentLength)}...`;
             }
             // Try to extract a title from the first line if it looks like a title
             let title;
-            const lines = textContent.split('\n');
+            const lines = processedText.split('\n');
             if (lines.length > 0) {
                 const firstLine = lines[0].trim();
                 if (firstLine.length > 0 && firstLine.length < 200) {
@@ -215,7 +218,7 @@ class ContentExtractor {
                 }
             }
             return {
-                text: textContent,
+                text: processedText,
                 title,
                 url,
                 contentType: contentType || 'text/plain',

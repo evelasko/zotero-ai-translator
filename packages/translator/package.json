@@ -23,13 +23,13 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest --coverage",
-    "lint": "eslint src --ext .ts,.js",
-    "lint:fix": "eslint src --ext .ts,.js --fix",
+    "lint": "eslint src/**/*.ts",
+    "lint:fix": "eslint src/**/*.ts --fix",
     "type-check": "tsc --noEmit",
     "clean": "rm -rf lib dist"
   },
   "dependencies": {
-    "@zotero-suite/schema-types": "workspace:*",
+    "@zotero-suite/schema-types": "file:../schema-types",
     "axios": "^1.6.0",
     "jsdom": "^23.0.0",
     "@mozilla/readability": "^0.4.4",
@@ -42,9 +42,6 @@
     "@types/jsdom": "^21.1.0",
     "@types/node": "^20.0.0",
     "@types/pdf-parse": "^1.1.1",
-    "@typescript-eslint/eslint-plugin": "^6.0.0",
-    "@typescript-eslint/parser": "^6.0.0",
-    "eslint": "^8.0.0",
     "typescript": "^5.0.0",
     "vitest": "^1.0.0"
   },

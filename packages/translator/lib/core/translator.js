@@ -6,12 +6,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Translator = void 0;
 const types_1 = require("../types");
 const content_extractor_1 = require("../utils/content-extractor");
+const ai_service_1 = require("./ai-service");
 /**
  * Main Translator class that orchestrates content ingestion and AI-powered translation
  */
 class Translator {
     config;
     contentExtractor;
+    aiService;
     constructor(config = {}) {
         this.config = {
             timeout: config.timeout ?? 30000,
@@ -19,11 +21,19 @@ class Translator {
             userAgent: config.userAgent ?? 'Zotero-AI-Translator/1.0.0',
             maxContentLength: config.maxContentLength ?? 50000,
             debug: config.debug ?? false,
+            ai: config.ai,
         };
         this.validateConfig();
         this.contentExtractor = new content_extractor_1.ContentExtractor(this.config);
+        // Initialize AI service if configuration is provided
+        if (this.config.ai) {
+            this.aiService = new ai_service_1.AIService(this.config.ai);
+        }
         if (this.config.debug) {
-            console.log('[Translator] Initialized with config:', this.config);
+            console.log('[Translator] Initialized with config:', {
+                ...this.config,
+                ai: this.config.ai ? { ...this.config.ai, apiKey: '[REDACTED]' } : undefined
+            });
         }
     }
     /**
@@ -82,33 +92,64 @@ class Translator {
      * Content Ingestion Pipeline - handles both URL and source text inputs
      */
     async ingestContent(input) {
-        if ('url' in input) {
+        if ('url' in input && input.url) {
             // URL-based ingestion path
             if (this.config.debug) {
                 console.log(`[Translator] Ingesting content from URL: ${input.url}`);
             }
             return this.contentExtractor.extractFromUrl(input.url);
         }
-        else {
+        else if ('sourceText' in input && input.sourceText) {
             // Source text ingestion path
             if (this.config.debug) {
                 console.log(`[Translator] Ingesting content from source text (${input.sourceText.length} chars)`);
             }
             return this.contentExtractor.extractFromSourceText(input.sourceText);
         }
+        else {
+            throw new types_1.TranslatorError('Invalid input: missing url or sourceText', 'INVALID_INPUT');
+        }
     }
     /**
      * AI Translation Pipeline - converts extracted content to Zotero item data
      *
-     * NOTE: This is a placeholder implementation. The actual AI logic using LangChain
-     * will be implemented in a future step.
+     * This method implements the two-step AI translation process:
+     * 1. Classification: Determine the appropriate Zotero item type
+     * 2. Extraction: Extract structured metadata using LangChain with dynamic schemas
+     * 3. Validation: Validate the result using Zod safeParse
      */
     async translateToZoteroItem(content) {
         if (this.config.debug) {
-            console.log('[Translator] AI translation pipeline (placeholder implementation)');
+            console.log('[Translator] Starting AI translation pipeline');
         }
-        // TODO: Implement LangChain AI logic here
-        // For now, return a basic item structure based on extracted content
+        // Use AI service if available, otherwise fall back to basic extraction
+        if (this.aiService) {
+            try {
+                const result = await this.aiService.translateContent(content);
+                if (this.config.debug) {
+                    console.log(`[Translator] AI translation completed with confidence: ${result.confidence}`);
+                }
+                return result.item;
+            }
+            catch (error) {
+                if (this.config.debug) {
+                    console.warn('[Translator] AI translation failed, falling back to basic extraction:', error);
+                }
+                // Fall back to basic extraction if AI fails
+                return this.basicFallbackExtraction(content);
+            }
+        }
+        else {
+            if (this.config.debug) {
+                console.log('[Translator] No AI configuration provided, using basic extraction');
+            }
+            return this.basicFallbackExtraction(content);
+        }
+    }
+    /**
+     * Basic fallback extraction when AI is not available or fails
+     */
+    basicFallbackExtraction(content) {
         const item = {
             itemType: this.inferItemType(content),
             title: content.title || 'Untitled',
@@ -155,9 +196,9 @@ class Translator {
         const excerpt = text.substring(0, maxLength);
         const lastSpaceIndex = excerpt.lastIndexOf(' ');
         if (lastSpaceIndex > maxLength * 0.8) {
-            return excerpt.substring(0, lastSpaceIndex) + '...';
+            return `${excerpt.substring(0, lastSpaceIndex)}...`;
         }
-        return excerpt + '...';
+        return `${excerpt}...`;
     }
     /**
      * Validate translator configuration
@@ -174,6 +215,19 @@ class Translator {
         }
         if (!this.config.userAgent || this.config.userAgent.trim().length === 0) {
             throw new types_1.ConfigurationError('User agent must be specified');
+        }
+        // Validate AI configuration if provided
+        if (this.config.ai) {
+            if (!this.config.ai.apiKey || this.config.ai.apiKey.trim().length === 0) {
+                throw new types_1.ConfigurationError('AI API key is required when AI configuration is provided');
+            }
+            if (this.config.ai.temperature !== undefined &&
+                (this.config.ai.temperature < 0 || this.config.ai.temperature > 2)) {
+                throw new types_1.ConfigurationError('AI temperature must be between 0 and 2');
+            }
+            if (this.config.ai.maxTokens !== undefined && this.config.ai.maxTokens <= 0) {
+                throw new types_1.ConfigurationError('AI max tokens must be greater than 0');
+            }
         }
     }
     /**

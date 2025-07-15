@@ -1,5 +1,6 @@
 /**
  * TypeScript type generator for Zotero schema
+ * Generates comprehensive types based on the official Zotero API schema
  */
 import { ZoteroSchema } from '../utils/schema-fetcher';
 export declare class TypeGenerator {
@@ -10,25 +11,57 @@ export declare class TypeGenerator {
      */
     generateTypes(): string;
     /**
-     * Generate base TypeScript types
+     * Generate utility types
+     */
+    private generateUtilityTypes;
+    /**
+     * Generate field types from schema
+     */
+    private generateFieldTypes;
+    /**
+     * Generate creator types from schema
+     */
+    private generateCreatorTypes;
+    /**
+     * Generate item type definitions
+     */
+    private generateItemTypeDefinitions;
+    /**
+     * Generate base types
      */
     private generateBaseTypes;
     /**
-     * Generate item-specific TypeScript types
+     * Generate specific item types (Note, Attachment, Annotation)
      */
-    private generateItemTypes;
+    private generateSpecificItemTypes;
     /**
-     * Generate collection TypeScript types
+     * Generate API types
+     */
+    private generateAPITypes;
+    /**
+     * Generate template types for API responses
+     */
+    private generateTemplateTypes;
+    /**
+     * Generate collection types
      */
     private generateCollectionTypes;
     /**
-     * Generate search TypeScript types
+     * Generate search types
      */
     private generateSearchTypes;
     /**
-     * Generate library TypeScript types
+     * Generate library and user types
      */
     private generateLibraryTypes;
+    /**
+     * Generate sync types
+     */
+    private generateSyncTypes;
+    /**
+     * Generate content types for fulltext, highlights, etc.
+     */
+    private generateContentTypes;
     /**
      * Capitalize first letter of a string
      */

@@ -1,37 +1,143 @@
 {
-  "$schema": "https://turbo.build/schema.json",
-  "pipeline": {
+  "$schema": "https://turborepo.com/schema.json",
+  "ui": "tui",
+  "envMode": "strict",
+  "globalDependencies": [
+    ".env",
+    ".env.local"
+  ],
+  "globalEnv": [
+    "NODE_ENV"
+  ],
+  "tasks": {
+    "generate": {
+      "cache": false,
+      "inputs": [
+        "scripts/**/*.js",
+        "zotero-schema-cache.json"
+      ],
+      "outputs": [
+        "src/schemas/**",
+        "src/types/**",
+        "zotero-schema-cache.json"
+      ]
+    },
     "build": {
-      "dependsOn": ["^build"],
-      "outputs": ["dist/**", "lib/**", "*.d.ts"]
+      "dependsOn": [
+        "^build"
+      ],
+      "inputs": [
+        "src/**/*.ts",
+        "tsconfig.json",
+        "package.json"
+      ],
+      "outputs": [
+        "lib/**"
+      ],
+      "env": [
+        "NODE_ENV"
+      ]
+    },
+    "@zotero-suite/schema-types#build": {
+      "dependsOn": [
+        "generate"
+      ],
+      "inputs": [
+        "src/**/*.ts",
+        "scripts/**/*.js",
+        "tsconfig.json",
+        "package.json"
+      ],
+      "outputs": [
+        "lib/**"
+      ],
+      "env": [
+        "NODE_ENV"
+      ]
     },
     "dev": {
+      "dependsOn": [
+        "^build"
+      ],
       "cache": false,
-      "persistent": true
+      "persistent": true,
+      "interactive": true
     },
     "test": {
-      "dependsOn": ["build"],
-      "outputs": ["coverage/**"]
+      "dependsOn": [
+        "^build"
+      ],
+      "inputs": [
+        "src/**/*.ts",
+        "src/**/*.test.ts",
+        "src/**/*.spec.ts",
+        "vitest.config.ts",
+        "jest.config.js"
+      ],
+      "outputs": [
+        "coverage/**"
+      ]
+    },
+    "test:watch": {
+      "dependsOn": [
+        "^build"
+      ],
+      "cache": false,
+      "persistent": true,
+      "interactive": true
     },
     "test:coverage": {
-      "dependsOn": ["build"],
-      "outputs": ["coverage/**"]
+      "dependsOn": [
+        "^build"
+      ],
+      "inputs": [
+        "src/**/*.ts",
+        "src/**/*.test.ts",
+        "src/**/*.spec.ts",
+        "vitest.config.ts",
+        "jest.config.js"
+      ],
+      "outputs": [
+        "coverage/**"
+      ]
     },
     "lint": {
+      "inputs": [
+        "src/**/*.ts",
+        "src/**/*.js",
+        ".eslintrc.*",
+        "eslint.config.*"
+      ],
       "outputs": []
     },
     "lint:fix": {
-      "outputs": []
+      "inputs": [
+        "src/**/*.ts",
+        "src/**/*.js",
+        ".eslintrc.*",
+        "eslint.config.*"
+      ],
+      "outputs": [],
+      "cache": false
     },
     "type-check": {
-      "dependsOn": ["^build"],
+      "dependsOn": [
+        "^build"
+      ],
+      "inputs": [
+        "src/**/*.ts",
+        "tsconfig.json"
+      ],
       "outputs": []
     },
     "clean": {
-      "cache": false
-    },
-    "generate": {
-      "outputs": ["src/generated/**"]
+      "cache": false,
+      "outputs": []
     }
-  }
+  },
+  "remoteCache": {
+    "enabled": false
+  },
+  "daemon": true,
+  "concurrency": "75%"
 }

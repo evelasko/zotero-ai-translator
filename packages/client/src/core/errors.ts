@@ -7,12 +7,7 @@ export class ZoteroAPIError extends Error {
   public readonly response?: Response;
   public readonly body?: unknown;
 
-  constructor(
-    message: string,
-    statusCode?: number,
-    response?: Response,
-    body?: unknown
-  ) {
+  constructor(message: string, statusCode?: number, response?: Response, body?: unknown) {
     super(message);
     this.name = 'ZoteroAPIError';
     this.statusCode = statusCode;
@@ -27,14 +22,24 @@ export class ZoteroAPIError extends Error {
 }
 
 export class ZoteroAuthenticationError extends ZoteroAPIError {
-  constructor(message: string = 'Authentication failed', statusCode?: number, response?: Response, body?: unknown) {
+  constructor(
+    message: string = 'Authentication failed',
+    statusCode?: number,
+    response?: Response,
+    body?: unknown,
+  ) {
     super(message, statusCode, response, body);
     this.name = 'ZoteroAuthenticationError';
   }
 }
 
 export class ZoteroNotFoundError extends ZoteroAPIError {
-  constructor(message: string = 'Resource not found', statusCode?: number, response?: Response, body?: unknown) {
+  constructor(
+    message: string = 'Resource not found',
+    statusCode?: number,
+    response?: Response,
+    body?: unknown,
+  ) {
     super(message, statusCode, response, body);
     this.name = 'ZoteroNotFoundError';
   }
@@ -50,7 +55,7 @@ export class ZoteroRateLimitError extends ZoteroAPIError {
     response?: Response,
     body?: unknown,
     retryAfter?: number,
-    backoff?: number
+    backoff?: number,
   ) {
     super(message, statusCode, response, body);
     this.name = 'ZoteroRateLimitError';
@@ -67,7 +72,7 @@ export class ZoteroValidationError extends ZoteroAPIError {
     statusCode?: number,
     response?: Response,
     body?: unknown,
-    validationErrors?: unknown[]
+    validationErrors?: unknown[],
   ) {
     super(message, statusCode, response, body);
     this.name = 'ZoteroValidationError';
@@ -76,28 +81,48 @@ export class ZoteroValidationError extends ZoteroAPIError {
 }
 
 export class ZoteroConflictError extends ZoteroAPIError {
-  constructor(message: string = 'Resource conflict', statusCode?: number, response?: Response, body?: unknown) {
+  constructor(
+    message: string = 'Resource conflict',
+    statusCode?: number,
+    response?: Response,
+    body?: unknown,
+  ) {
     super(message, statusCode, response, body);
     this.name = 'ZoteroConflictError';
   }
 }
 
 export class ZoteroForbiddenError extends ZoteroAPIError {
-  constructor(message: string = 'Access forbidden', statusCode?: number, response?: Response, body?: unknown) {
+  constructor(
+    message: string = 'Access forbidden',
+    statusCode?: number,
+    response?: Response,
+    body?: unknown,
+  ) {
     super(message, statusCode, response, body);
     this.name = 'ZoteroForbiddenError';
   }
 }
 
 export class ZoteroBadRequestError extends ZoteroAPIError {
-  constructor(message: string = 'Bad request', statusCode?: number, response?: Response, body?: unknown) {
+  constructor(
+    message: string = 'Bad request',
+    statusCode?: number,
+    response?: Response,
+    body?: unknown,
+  ) {
     super(message, statusCode, response, body);
     this.name = 'ZoteroBadRequestError';
   }
 }
 
 export class ZoteroServerError extends ZoteroAPIError {
-  constructor(message: string = 'Server error', statusCode?: number, response?: Response, body?: unknown) {
+  constructor(
+    message: string = 'Server error',
+    statusCode?: number,
+    response?: Response,
+    body?: unknown,
+  ) {
     super(message, statusCode, response, body);
     this.name = 'ZoteroServerError';
   }
@@ -105,7 +130,7 @@ export class ZoteroServerError extends ZoteroAPIError {
 
 export class ZoteroNetworkError extends ZoteroAPIError {
   public readonly cause?: Error;
-  
+
   constructor(message: string = 'Network error', originalError?: Error) {
     super(message);
     this.name = 'ZoteroNetworkError';
@@ -119,11 +144,11 @@ export class ZoteroNetworkError extends ZoteroAPIError {
 export function createErrorFromResponse(
   response: Response,
   body?: unknown,
-  message?: string
+  message?: string,
 ): ZoteroAPIError {
   const statusCode = response.status;
   const defaultMessage = `HTTP ${statusCode}: ${response.statusText}`;
-  const errorMessage = message || defaultMessage;
+  const errorMessage = message ?? defaultMessage;
 
   switch (statusCode) {
     case 400:
@@ -147,7 +172,7 @@ export function createErrorFromResponse(
         response,
         body,
         retryAfter ? parseInt(retryAfter, 10) : undefined,
-        backoff ? parseInt(backoff, 10) : undefined
+        backoff ? parseInt(backoff, 10) : undefined,
       );
     }
     case 500:

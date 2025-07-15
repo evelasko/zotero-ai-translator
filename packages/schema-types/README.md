@@ -1,14 +1,19 @@
 # @zotero-suite/schema-types
 
-The foundational package that ingests the official Zotero `schema.json` to generate and export Zod schemas and derived TypeScript types for the entire Zotero AI Translator Suite.
+The foundational package that ingests the official Zotero `schema.json` to
+generate and export Zod schemas and derived TypeScript types for the entire
+Zotero AI Translator Suite.
 
 ## Features
 
-- **Schema-driven development**: Automatically generates types from Zotero's official schema
+- **Schema-driven development**: Automatically generates types from Zotero's
+  official schema
 - **Type safety**: Comprehensive TypeScript interfaces for all Zotero item types
 - **Runtime validation**: Zod schemas for validating data at runtime
-- **Automatic updates**: Fetches the latest schema from Zotero API with local caching
-- **Item-specific types**: Generates precise types for each Zotero item type (books, articles, etc.)
+- **Automatic updates**: Fetches the latest schema from Zotero API with local
+  caching
+- **Item-specific types**: Generates precise types for each Zotero item type
+  (books, articles, etc.)
 
 ## Installation
 
@@ -21,11 +26,11 @@ npm install @zotero-suite/schema-types
 ### Basic Usage
 
 ```typescript
-import { 
-  ZoteroItemSchema, 
+import {
+  ZoteroItemSchema,
   ZoteroBookItemSchema,
   ZoteroItem,
-  ZoteroBookItem 
+  ZoteroBookItem,
 } from '@zotero-suite/schema-types';
 
 // Validate a Zotero item
@@ -34,7 +39,7 @@ const item: ZoteroItem = {
     itemType: 'book',
     title: 'The Great Gatsby',
     // ... other properties
-  }
+  },
 };
 
 const result = ZoteroItemSchema.safeParse(item);
@@ -48,10 +53,10 @@ if (result.success) {
 ### Advanced Usage
 
 ```typescript
-import { 
+import {
   ZoteroSchemaProcessor,
   getItemTypeNames,
-  getCreatorTypesForItem 
+  getCreatorTypesForItem,
 } from '@zotero-suite/schema-types';
 
 // Process schema and generate fresh types
@@ -101,6 +106,7 @@ The package is structured as follows:
 The package generates the following types:
 
 ### Base Types
+
 - `ZoteroItem` - Base item interface
 - `ZoteroItemData` - Item data structure
 - `ZoteroCreator` - Creator/author information
@@ -110,12 +116,14 @@ The package generates the following types:
 - `ZoteroLibrary` - Library information
 
 ### Item-Specific Types
+
 - `ZoteroBookItem` - Book items
 - `ZoteroArticleItem` - Journal articles
 - `ZoteroWebsiteItem` - Web pages
 - ... and many more for each Zotero item type
 
 ### Validation Schemas
+
 - `ZoteroItemSchema` - Base item validation
 - `ZoteroBookItemSchema` - Book-specific validation
 - `ZoteroArticleItemSchema` - Article-specific validation
@@ -123,36 +131,46 @@ The package generates the following types:
 
 ## Schema Caching
 
-The package automatically caches the Zotero schema locally to improve performance and provide offline capabilities. The cache is updated whenever the schema is fetched from the API.
+The package automatically caches the Zotero schema locally to improve
+performance and provide offline capabilities. The cache is updated whenever the
+schema is fetched from the API.
 
 ## API Reference
 
 ### Classes
 
 #### `ZoteroSchemaProcessor`
+
 Main class for processing Zotero schema and generating types.
 
 #### `SchemaFetcher`
+
 Handles fetching and caching of Zotero schema.
 
 #### `TypeGenerator`
+
 Generates TypeScript interfaces from schema.
 
 #### `ZodGenerator`
+
 Generates Zod validation schemas from schema.
 
 ### Utility Functions
 
 #### `getItemTypeNames(schema)`
+
 Returns array of all available item type names.
 
 #### `getCreatorTypesForItem(schema, itemType)`
+
 Returns creator types valid for a specific item type.
 
 #### `getFieldsForItem(schema, itemType)`
+
 Returns fields available for a specific item type.
 
 #### `isValidItemType(schema, itemType)`
+
 Validates if an item type exists in the schema.
 
 ## License

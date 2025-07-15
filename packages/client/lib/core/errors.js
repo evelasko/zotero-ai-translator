@@ -139,7 +139,7 @@ exports.ZoteroNetworkError = ZoteroNetworkError;
 function createErrorFromResponse(response, body, message) {
     const statusCode = response.status;
     const defaultMessage = `HTTP ${statusCode}: ${response.statusText}`;
-    const errorMessage = message || defaultMessage;
+    const errorMessage = message ?? defaultMessage;
     switch (statusCode) {
         case 400:
             return new ZoteroBadRequestError(errorMessage, statusCode, response, body);

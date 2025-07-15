@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /**
  * Schema fetcher utility for retrieving and caching Zotero schema
  */
@@ -44,36 +45,36 @@ export class SchemaFetcher {
    */
   async fetchSchema(): Promise<ZoteroSchema> {
     console.log('Fetching Zotero schema...');
-    
+
     try {
       const response = await fetch(SCHEMA_URL, {
         headers: {
           'Accept-Encoding': 'gzip',
-          'User-Agent': 'zotero-suite/schema-types@1.0.0'
-        }
+          'User-Agent': 'zotero-suite/schema-types@1.0.0',
+        },
       });
-      
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      
-      const schema = await response.json() as ZoteroSchema;
+
+      const schema = (await response.json()) as ZoteroSchema;
       console.log(`Schema version: ${schema.version}`);
-      
+
       // Cache the schema
       this.cacheSchema(schema);
-      
+
       return schema;
     } catch (error) {
       console.error('Failed to fetch schema:', error);
-      
+
       // Try to use cached schema as fallback
       const cachedSchema = this.loadCachedSchema();
       if (cachedSchema) {
         console.log('Using cached schema as fallback...');
         return cachedSchema;
       }
-      
+
       throw error;
     }
   }

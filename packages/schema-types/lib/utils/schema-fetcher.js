@@ -1,4 +1,5 @@
 "use strict";
+/* eslint-disable no-console */
 /**
  * Schema fetcher utility for retrieving and caching Zotero schema
  */
@@ -60,13 +61,13 @@ class SchemaFetcher {
             const response = await fetch(SCHEMA_URL, {
                 headers: {
                     'Accept-Encoding': 'gzip',
-                    'User-Agent': 'zotero-suite/schema-types@1.0.0'
-                }
+                    'User-Agent': 'zotero-suite/schema-types@1.0.0',
+                },
             });
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
-            const schema = await response.json();
+            const schema = (await response.json());
             console.log(`Schema version: ${schema.version}`);
             // Cache the schema
             this.cacheSchema(schema);

@@ -4,18 +4,24 @@ AI-powered content translation service for Zotero metadata extraction.
 
 ## Overview
 
-The `@zotero-suite/translator` package provides intelligent content processing and metadata extraction capabilities for converting web content, PDFs, and text into structured Zotero item data.
+The `@zotero-suite/translator` package provides intelligent content processing
+and metadata extraction capabilities for converting web content, PDFs, and text
+into structured Zotero item data.
 
 ## Features
 
 - **Dual Input Support**: Process content from URLs or direct source text
-- **AI-Powered Translation**: Two-step AI process for intelligent metadata extraction
+- **AI-Powered Translation**: Two-step AI process for intelligent metadata
+  extraction
 - **Content Extraction**: Advanced parsing for HTML, PDF, and plain text
-- **Metadata Extraction**: Automatic extraction of titles, authors, dates, and descriptions
+- **Metadata Extraction**: Automatic extraction of titles, authors, dates, and
+  descriptions
 - **Type Safety**: Full TypeScript support with comprehensive type definitions
 - **Error Handling**: Detailed error types for different failure scenarios
-- **Configurable**: Flexible configuration options for timeouts, retries, and content limits
-- **Fallback Support**: Graceful fallback to basic extraction when AI is unavailable
+- **Configurable**: Flexible configuration options for timeouts, retries, and
+  content limits
+- **Fallback Support**: Graceful fallback to basic extraction when AI is
+  unavailable
 
 ## Installation
 
@@ -38,17 +44,17 @@ const translator = new Translator({
     extractionModel: 'gpt-3.5-turbo',
     temperature: 0.1,
     maxTokens: 2000,
-  }
+  },
 });
 
 // Translate from URL with AI
 const urlResult = await translator.translate({
-  url: 'https://example.com/article'
+  url: 'https://example.com/article',
 });
 
 // Translate from source text with AI
 const textResult = await translator.translate({
-  sourceText: 'This is the content to translate...'
+  sourceText: 'This is the content to translate...',
 });
 
 console.log(urlResult.item); // Zotero item data
@@ -75,9 +81,7 @@ new Translator(config?: TranslatorConfig)
 #### TranslationInput
 
 ```typescript
-type TranslationInput = 
-  | { url: string }
-  | { sourceText: string }
+type TranslationInput = { url: string } | { sourceText: string };
 ```
 
 #### TranslationResult
@@ -127,7 +131,8 @@ The translator supports two content ingestion paths:
 2. **Content Type Detection**: Automatically detects HTML, PDF, or text content
 3. **HTML Processing**: Uses Readability API for clean content extraction
 4. **PDF Processing**: Extracts text and metadata from PDF files
-5. **Metadata Extraction**: Pulls author, title, date, and description information
+5. **Metadata Extraction**: Pulls author, title, date, and description
+   information
 
 ### Source Text Ingestion
 
@@ -138,25 +143,31 @@ The translator supports two content ingestion paths:
 
 ## AI Translation Pipeline
 
-When AI configuration is provided, the translator uses a sophisticated two-step AI process:
+When AI configuration is provided, the translator uses a sophisticated two-step
+AI process:
 
 ### Step 1: Classification
-- Uses OpenAI's language model to analyze content and determine the most appropriate Zotero item type
+
+- Uses OpenAI's language model to analyze content and determine the most
+  appropriate Zotero item type
 - Considers content structure, metadata, and textual patterns
 - Returns item type (e.g., "journalArticle", "webpage", "book", "document")
 
 ### Step 2: Extraction
+
 - Uses LangChain's StructuredOutputParser with dynamically selected Zod schema
 - Schema selection based on the classified item type from Step 1
 - Extracts structured metadata including title, authors, dates, abstract, etc.
 - Employs OutputFixingParser for error recovery and validation
 
 ### Step 3: Validation
+
 - Final validation using Zod schema's `.safeParse()` method
 - Ensures all extracted data conforms to expected types and formats
 - Provides detailed error information for debugging
 
 ### Fallback Mechanism
+
 - If AI translation fails, automatically falls back to basic extraction
 - Ensures robustness and availability even when AI services are unavailable
 - Maintains consistent output format regardless of extraction method
@@ -168,7 +179,7 @@ The package provides specific error types for different failure scenarios:
 - `TranslatorError`: Base error class
 - `ContentExtractionError`: Content processing failures
 - `UrlFetchError`: Network and HTTP errors
-- `PdfParseError`: PDF processing errors  
+- `PdfParseError`: PDF processing errors
 - `ConfigurationError`: Invalid configuration errors
 - `AIClassificationError`: AI classification failures
 - `AIExtractionError`: AI extraction failures
@@ -206,30 +217,32 @@ The package provides specific error types for different failure scenarios:
 
 ```typescript
 const translator = new Translator({
-  timeout: 60000,          // 60 second timeout
-  maxRetries: 5,           // 5 retry attempts
+  timeout: 60000, // 60 second timeout
+  maxRetries: 5, // 5 retry attempts
   userAgent: 'MyApp/1.0.0',
   maxContentLength: 100000, // 100k character limit
-  debug: true,             // Enable debug logging
+  debug: true, // Enable debug logging
   ai: {
     apiKey: 'your-openai-api-key',
     classificationModel: 'gpt-4',
     extractionModel: 'gpt-4',
     temperature: 0.2,
     maxTokens: 4000,
-  }
+  },
 });
 ```
 
 ## Development Status
 
-This package provides a complete AI-powered translation pipeline using LangChain.js. The current implementation includes:
+This package provides a complete AI-powered translation pipeline using
+LangChain.js. The current implementation includes:
 
 - ✅ Complete content ingestion pipeline
 - ✅ Content extraction from URLs and source text
 - ✅ Basic metadata extraction
 - ✅ Type-safe interfaces
-- ✅ AI-powered translation with two-step process (Classification → Extraction → Validation)
+- ✅ AI-powered translation with two-step process (Classification → Extraction →
+  Validation)
 - ✅ LangChain.js integration with OpenAI models
 - ✅ Dynamic Zod schema configuration for structured output
 - ✅ Graceful fallback to basic extraction when AI is unavailable

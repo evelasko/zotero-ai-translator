@@ -9,6 +9,7 @@ import { z } from 'zod';
 import { ZoteroItemData } from '@zotero-suite/schema-types';
 import { 
   AIConfig, 
+  RequiredAIConfig,
   ExtractedContent, 
   AIClassificationError, 
   AIExtractionError, 
@@ -19,7 +20,7 @@ import {
  * AI Service class that handles the two-step AI translation process
  */
 export class AIService {
-  private readonly config: Required<AIConfig>;
+  private readonly config: RequiredAIConfig;
   private readonly classificationModel: ChatOpenAI;
   private readonly extractionModel: ChatOpenAI;
 
@@ -30,7 +31,7 @@ export class AIService {
       extractionModel: config.extractionModel ?? 'gpt-3.5-turbo',
       temperature: config.temperature ?? 0.1,
       maxTokens: config.maxTokens ?? 2000,
-      baseURL: config.baseURL,
+      ...(config.baseURL && { baseURL: config.baseURL }),
     };
 
     // Initialize classification model
@@ -39,7 +40,7 @@ export class AIService {
       temperature: this.config.temperature,
       maxTokens: this.config.maxTokens,
       openAIApiKey: this.config.apiKey,
-      configuration: this.config.baseURL ? { baseURL: this.config.baseURL } : undefined,
+      ...(this.config.baseURL && { configuration: { baseURL: this.config.baseURL } }),
     });
 
     // Initialize extraction model

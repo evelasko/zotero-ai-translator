@@ -3,7 +3,7 @@
  * Type definitions for the Zotero AI Translator package
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ConfigurationError = exports.PdfParseError = exports.UrlFetchError = exports.ContentExtractionError = exports.TranslatorError = void 0;
+exports.AIValidationError = exports.AIExtractionError = exports.AIClassificationError = exports.ConfigurationError = exports.PdfParseError = exports.UrlFetchError = exports.ContentExtractionError = exports.TranslatorError = void 0;
 /**
  * Error types specific to the translator
  */
@@ -58,3 +58,33 @@ class ConfigurationError extends TranslatorError {
     }
 }
 exports.ConfigurationError = ConfigurationError;
+/**
+ * AI classification errors
+ */
+class AIClassificationError extends TranslatorError {
+    constructor(message, cause) {
+        super(message, 'AI_CLASSIFICATION_ERROR', cause);
+        this.name = 'AIClassificationError';
+    }
+}
+exports.AIClassificationError = AIClassificationError;
+/**
+ * AI extraction errors
+ */
+class AIExtractionError extends TranslatorError {
+    constructor(message, cause) {
+        super(message, 'AI_EXTRACTION_ERROR', cause);
+        this.name = 'AIExtractionError';
+    }
+}
+exports.AIExtractionError = AIExtractionError;
+/**
+ * AI validation errors
+ */
+class AIValidationError extends TranslatorError {
+    constructor(message, cause) {
+        super(message, 'AI_VALIDATION_ERROR', cause);
+        this.name = 'AIValidationError';
+    }
+}
+exports.AIValidationError = AIValidationError;

@@ -24,7 +24,7 @@ class ZoteroAuth {
             throw new Error('API key is required for authentication');
         }
         this.apiKey = config.apiKey.trim();
-        this.method = config.method || 'header';
+        this.method = config.method ?? 'header';
     }
     /**
      * Get the authentication headers for API requests
@@ -33,12 +33,12 @@ class ZoteroAuth {
         switch (this.method) {
             case 'bearer':
                 return {
-                    'Authorization': `Bearer ${this.apiKey}`
+                    Authorization: `Bearer ${this.apiKey}`,
                 };
             case 'header':
             default:
                 return {
-                    'Zotero-API-Key': this.apiKey
+                    'Zotero-API-Key': this.apiKey,
                 };
         }
     }
@@ -68,7 +68,7 @@ exports.ZoteroAuth = ZoteroAuth;
  * Create authentication instance from API key string
  */
 function createAuth(apiKey, method) {
-    return new ZoteroAuth({ apiKey, method: method || 'header' });
+    return new ZoteroAuth({ apiKey, method: method ?? 'header' });
 }
 /**
  * Type guard to check if auth config is valid

@@ -3,7 +3,7 @@
  */
 export { ZoteroClient, ZoteroClientConfig, createClient } from './core/client';
 export { ZoteroHttpClient, ZoteroHttpClientConfig, ZoteroResponse, PaginationInfo, RequestOptions } from './core/http';
-export { ZoteroAuth, ZoteroAuthConfig, createAuth, createAPIKeyAuth, createBearerAuth } from './core/auth';
+export { ZoteroAuth, ZoteroAuthConfig, createAuth, isValidAuthConfig } from './core/auth';
 export { ZoteroAPIError, ZoteroAuthenticationError, ZoteroNotFoundError, ZoteroRateLimitError, ZoteroValidationError, ZoteroConflictError, ZoteroForbiddenError, ZoteroBadRequestError, ZoteroServerError, ZoteroNetworkError, createErrorFromResponse, isZoteroAPIError, isRateLimitError, isAuthenticationError, isValidationError, isNetworkError } from './core/errors';
 export { ItemsAPI, ItemsQueryParams, ItemsCreateData, ItemsUpdateData, ItemsBatchResponse } from './api/items';
 export { CollectionsAPI, CollectionsQueryParams, CollectionsBatchResponse } from './api/collections';

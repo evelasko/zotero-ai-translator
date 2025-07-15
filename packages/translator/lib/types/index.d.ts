@@ -49,6 +49,54 @@ export interface TranslatorConfig {
      * @default false
      */
     debug?: boolean;
+    /**
+     * AI configuration options
+     */
+    ai?: AIConfig;
+}
+/**
+ * AI configuration for LangChain integration
+ */
+export interface AIConfig {
+    /**
+     * OpenAI API key
+     */
+    apiKey: string;
+    /**
+     * OpenAI model to use for classification
+     * @default 'gpt-3.5-turbo'
+     */
+    classificationModel?: string;
+    /**
+     * OpenAI model to use for extraction
+     * @default 'gpt-3.5-turbo'
+     */
+    extractionModel?: string;
+    /**
+     * Temperature for AI responses
+     * @default 0.1
+     */
+    temperature?: number;
+    /**
+     * Maximum tokens for AI responses
+     * @default 2000
+     */
+    maxTokens?: number;
+    /**
+     * Custom base URL for OpenAI API
+     */
+    baseURL?: string;
+}
+/**
+ * Required AI configuration with all optional fields resolved
+ */
+export interface RequiredAIConfig {
+    apiKey: string;
+    classificationModel: string;
+    extractionModel: string;
+    temperature: number;
+    maxTokens: number;
+    baseURL?: string;
 }
 /**
  * Extracted content from URL or source text
@@ -150,4 +198,22 @@ export declare class PdfParseError extends TranslatorError {
  */
 export declare class ConfigurationError extends TranslatorError {
     constructor(message: string);
+}
+/**
+ * AI classification errors
+ */
+export declare class AIClassificationError extends TranslatorError {
+    constructor(message: string, cause?: Error);
+}
+/**
+ * AI extraction errors
+ */
+export declare class AIExtractionError extends TranslatorError {
+    constructor(message: string, cause?: Error);
+}
+/**
+ * AI validation errors
+ */
+export declare class AIValidationError extends TranslatorError {
+    constructor(message: string, cause?: Error);
 }

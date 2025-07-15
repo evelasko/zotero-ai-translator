@@ -21,7 +21,8 @@ export class ContentExtractor {
       userAgent: config.userAgent ?? 'Zotero-AI-Translator/1.0.0',
       maxContentLength: config.maxContentLength ?? 50000,
       debug: config.debug ?? false,
-    };
+      ai: config.ai,
+    } as Required<TranslatorConfig>;
   }
 
   /**
@@ -131,7 +132,7 @@ export class ContentExtractor {
       
       // Truncate if too long
       if (text.length > this.config.maxContentLength) {
-        text = text.substring(0, this.config.maxContentLength) + '...';
+        text = `${text.substring(0, this.config.maxContentLength)  }...`;
       }
 
       // Extract additional metadata
@@ -190,7 +191,7 @@ export class ContentExtractor {
       
       // Truncate if too long
       if (text.length > this.config.maxContentLength) {
-        text = text.substring(0, this.config.maxContentLength) + '...';
+        text = `${text.substring(0, this.config.maxContentLength)  }...`;
       }
 
       // Extract metadata from PDF info
@@ -225,14 +226,15 @@ export class ContentExtractor {
   /**
    * Extract content from plain text
    */
-  private extractFromText(text: string | Buffer, url?: string, contentType?: string): ExtractedContent {
-    try {
-      const textContent = text instanceof Buffer ? text.toString('utf-8') : text;
-      
-      // Truncate if too long
-      let processedText = textContent;
+      private extractFromText(text: string | Buffer, url?: string, contentType?: string): ExtractedContent {
+      try {
+        // Ensure text is always a string
+        const textContent = (text instanceof Buffer ? text.toString('utf-8') : text) as string;
+        
+        // Truncate if too long  
+        let processedText: string = textContent;
       if (processedText.length > this.config.maxContentLength) {
-        processedText = processedText.substring(0, this.config.maxContentLength) + '...';
+        processedText = `${processedText.substring(0, this.config.maxContentLength)  }...`;
       }
 
       // Try to extract a title from the first line if it looks like a title
