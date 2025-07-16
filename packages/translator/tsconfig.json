@@ -23,6 +23,17 @@
     "incremental": true,
     "tsBuildInfoFile": "./lib/.tsbuildinfo"
   },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules", "lib", "dist"]
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "lib",
+    "dist",
+    "**/*.test.ts",
+    "**/*.spec.ts",
+    "src/tests/**/*",
+    "test/**/*",
+    "tests/**/*"
+  ]
 }

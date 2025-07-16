@@ -1,5 +1,0 @@
-/**
- * MSW request handlers for mocking Zotero API
- */
-export declare const handlers: import("msw").HttpHandler[];
-//# sourceMappingURL=handlers.d.ts.map
