@@ -4,7 +4,7 @@
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { Translator } from '../core/translator';
-import { AIConfig, ConfigurationError, TranslatorConfig } from '../types';
+import { AIProviderConfig, ConfigurationError, TranslatorConfig } from '../types';
 
 // Mock LangChain modules to avoid requiring actual API keys in tests
 vi.mock('@langchain/openai', () => ({
@@ -13,14 +13,22 @@ vi.mock('@langchain/openai', () => ({
   })),
 }));
 
-vi.mock('@langchain/core/prompts', () => ({
-  PromptTemplate: {
-    fromTemplate: vi.fn().mockReturnValue({
-      pipe: vi.fn().mockReturnValue({
-        invoke: vi.fn(),
-      }),
-    }),
-  },
+vi.mock('@langchain/anthropic', () => ({
+  ChatAnthropic: vi.fn().mockImplementation(() => ({
+    // Mock implementation
+  })),
+}));
+
+vi.mock('@langchain/google-vertexai', () => ({
+  ChatVertexAI: vi.fn().mockImplementation(() => ({
+    // Mock implementation
+  })),
+}));
+
+vi.mock('@langchain/ollama', () => ({
+  ChatOllama: vi.fn().mockImplementation(() => ({
+    // Mock implementation
+  })),
 }));
 
 vi.mock('@langchain/core/output_parsers', () => ({
@@ -98,9 +106,10 @@ describe('Translator', () => {
       expect(() => new Translator({ userAgent: '   ' })).toThrow(ConfigurationError);
     });
 
-    it('should create translator with AI configuration', () => {
-      const aiConfig: AIConfig = {
-        apiKey: 'test-api-key',
+    it('should create translator with OpenAI provider configuration', () => {
+      const aiConfig: AIProviderConfig = {
+        provider: 'openai',
+        apiKey: 'sk-test-api-key',
         classificationModel: 'gpt-3.5-turbo',
         extractionModel: 'gpt-3.5-turbo',
         temperature: 0.1,
@@ -114,23 +123,79 @@ describe('Translator', () => {
       expect(() => new Translator(configWithAI)).not.toThrow();
     });
 
-    it('should throw error for invalid AI configuration', () => {
-      expect(() => new Translator({ ai: { apiKey: '' } })).toThrow(ConfigurationError);
-      expect(() => new Translator({ ai: { apiKey: '   ' } })).toThrow(ConfigurationError);
+    it('should create translator with Anthropic provider configuration', () => {
+      const aiConfig: AIProviderConfig = {
+        provider: 'anthropic',
+        apiKey: 'sk-ant-test-api-key',
+        classificationModel: 'claude-3-haiku-20240307',
+        extractionModel: 'claude-3-5-sonnet-20241022',
+        temperature: 0.1,
+        maxTokens: 2000,
+      };
+
+      const configWithAI: TranslatorConfig = {
+        ai: aiConfig,
+      };
+
+      expect(() => new Translator(configWithAI)).not.toThrow();
+    });
+
+    it('should create translator with VertexAI provider configuration', () => {
+      const aiConfig: AIProviderConfig = {
+        provider: 'vertexai',
+        projectId: 'test-project',
+        location: 'us-central1',
+        classificationModel: 'gemini-1.5-flash-002',
+        extractionModel: 'gemini-1.5-pro-002',
+        temperature: 0.1,
+        maxTokens: 2000,
+      };
+
+      const configWithAI: TranslatorConfig = {
+        ai: aiConfig,
+      };
+
+      expect(() => new Translator(configWithAI)).not.toThrow();
+    });
+
+    it('should create translator with Ollama provider configuration', () => {
+      const aiConfig: AIProviderConfig = {
+        provider: 'ollama',
+        baseUrl: 'http://localhost:11434',
+        classificationModel: 'llama3.1:8b',
+        extractionModel: 'llama3.1:70b',
+        temperature: 0.1,
+        maxTokens: 2000,
+      };
+
+      const configWithAI: TranslatorConfig = {
+        ai: aiConfig,
+      };
+
+      expect(() => new Translator(configWithAI)).not.toThrow();
+    });
+
+    it('should throw error for invalid AI provider configuration', () => {
+      expect(
+        () => new Translator({ ai: { provider: 'openai', apiKey: '' } as AIProviderConfig }),
+      ).toThrow(ConfigurationError);
+      expect(
+        () => new Translator({ ai: { provider: 'openai', apiKey: '   ' } as AIProviderConfig }),
+      ).toThrow(ConfigurationError);
     });
 
     it('should throw error for invalid AI temperature', () => {
       expect(
         () =>
           new Translator({
-            ai: { apiKey: 'test-key', temperature: -1 },
+            ai: { provider: 'openai', apiKey: 'test-key', temperature: -1 } as AIProviderConfig,
           }),
       ).toThrow(ConfigurationError);
 
       expect(
         () =>
           new Translator({
-            ai: { apiKey: 'test-key', temperature: 3 },
+            ai: { provider: 'openai', apiKey: 'test-key', temperature: 3 } as AIProviderConfig,
           }),
       ).toThrow(ConfigurationError);
     });
@@ -139,14 +204,14 @@ describe('Translator', () => {
       expect(
         () =>
           new Translator({
-            ai: { apiKey: 'test-key', maxTokens: 0 },
+            ai: { provider: 'openai', apiKey: 'test-key', maxTokens: 0 } as AIProviderConfig,
           }),
       ).toThrow(ConfigurationError);
 
       expect(
         () =>
           new Translator({
-            ai: { apiKey: 'test-key', maxTokens: -100 },
+            ai: { provider: 'openai', apiKey: 'test-key', maxTokens: -100 } as AIProviderConfig,
           }),
       ).toThrow(ConfigurationError);
     });
@@ -196,12 +261,16 @@ describe('Translator', () => {
       expect(result.item).toHaveProperty('itemType');
       expect(result.item).toHaveProperty('title');
       expect(result.processing.ingestionMethod).toBe('sourceText');
+      expect(result.processing.aiProvider).toBeUndefined(); // No AI provider configured
     });
 
-    it('should work with AI configuration', async () => {
+    it('should work with OpenAI provider configuration', async () => {
       const aiTranslator = new Translator({
         ai: {
-          apiKey: 'test-api-key',
+          provider: 'openai',
+          apiKey: 'sk-test-api-key',
+          classificationModel: 'gpt-3.5-turbo',
+          extractionModel: 'gpt-3.5-turbo',
           temperature: 0.1,
           maxTokens: 2000,
         },
@@ -216,12 +285,39 @@ describe('Translator', () => {
       expect(result).toHaveProperty('item');
       expect(result).toHaveProperty('confidence');
       expect(result.processing.ingestionMethod).toBe('sourceText');
+      expect(result.processing.aiProvider).toBe('openai');
+      expect(result.processing.modelsUsed).toBeDefined();
+    });
+
+    it('should work with Anthropic provider configuration', async () => {
+      const aiTranslator = new Translator({
+        ai: {
+          provider: 'anthropic',
+          apiKey: 'sk-ant-test-api-key',
+          classificationModel: 'claude-3-haiku-20240307',
+          extractionModel: 'claude-3-5-sonnet-20241022',
+          temperature: 0.1,
+          maxTokens: 2000,
+        },
+        debug: false,
+      });
+
+      const validInput = { sourceText: 'This is a research paper about machine learning.' };
+
+      const result = await aiTranslator.translate(validInput);
+
+      expect(result).toHaveProperty('item');
+      expect(result).toHaveProperty('confidence');
+      expect(result.processing.ingestionMethod).toBe('sourceText');
+      expect(result.processing.aiProvider).toBe('anthropic');
+      expect(result.processing.modelsUsed).toBeDefined();
     });
 
     it('should fallback to basic extraction when AI fails', async () => {
       const aiTranslator = new Translator({
         ai: {
-          apiKey: 'test-api-key',
+          provider: 'openai',
+          apiKey: 'invalid-api-key',
         },
         debug: false,
       });

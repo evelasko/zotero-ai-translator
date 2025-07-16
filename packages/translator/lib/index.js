@@ -3,19 +3,27 @@
  * Main entry point for the Zotero AI Translator package
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = exports.AIService = exports.ContentExtractor = exports.AIValidationError = exports.AIExtractionError = exports.AIClassificationError = exports.ConfigurationError = exports.PdfParseError = exports.UrlFetchError = exports.ContentExtractionError = exports.TranslatorError = exports.Translator = void 0;
+exports.default = exports.AIService = exports.ContentExtractor = exports.UrlFetchError = exports.TranslatorError = exports.PdfParseError = exports.ContentExtractionError = exports.ConfigurationError = exports.AIValidationError = exports.AIExtractionError = exports.AIClassificationError = exports.ConfigValidator = exports.registerAllProviders = exports.getProviderStatus = exports.ProviderFactory = exports.ProviderDetector = exports.Translator = void 0;
 // Export the main Translator class
 var translator_1 = require("./core/translator");
 Object.defineProperty(exports, "Translator", { enumerable: true, get: function () { return translator_1.Translator; } });
+// Export provider system
+var providers_1 = require("./core/providers");
+Object.defineProperty(exports, "ProviderDetector", { enumerable: true, get: function () { return providers_1.ProviderDetector; } });
+Object.defineProperty(exports, "ProviderFactory", { enumerable: true, get: function () { return providers_1.ProviderFactory; } });
+Object.defineProperty(exports, "getProviderStatus", { enumerable: true, get: function () { return providers_1.getProviderStatus; } });
+Object.defineProperty(exports, "registerAllProviders", { enumerable: true, get: function () { return providers_1.registerAllProviders; } });
+var config_validator_1 = require("./core/config-validator");
+Object.defineProperty(exports, "ConfigValidator", { enumerable: true, get: function () { return config_validator_1.ConfigValidator; } });
 var types_1 = require("./types");
-Object.defineProperty(exports, "TranslatorError", { enumerable: true, get: function () { return types_1.TranslatorError; } });
-Object.defineProperty(exports, "ContentExtractionError", { enumerable: true, get: function () { return types_1.ContentExtractionError; } });
-Object.defineProperty(exports, "UrlFetchError", { enumerable: true, get: function () { return types_1.UrlFetchError; } });
-Object.defineProperty(exports, "PdfParseError", { enumerable: true, get: function () { return types_1.PdfParseError; } });
-Object.defineProperty(exports, "ConfigurationError", { enumerable: true, get: function () { return types_1.ConfigurationError; } });
 Object.defineProperty(exports, "AIClassificationError", { enumerable: true, get: function () { return types_1.AIClassificationError; } });
 Object.defineProperty(exports, "AIExtractionError", { enumerable: true, get: function () { return types_1.AIExtractionError; } });
 Object.defineProperty(exports, "AIValidationError", { enumerable: true, get: function () { return types_1.AIValidationError; } });
+Object.defineProperty(exports, "ConfigurationError", { enumerable: true, get: function () { return types_1.ConfigurationError; } });
+Object.defineProperty(exports, "ContentExtractionError", { enumerable: true, get: function () { return types_1.ContentExtractionError; } });
+Object.defineProperty(exports, "PdfParseError", { enumerable: true, get: function () { return types_1.PdfParseError; } });
+Object.defineProperty(exports, "TranslatorError", { enumerable: true, get: function () { return types_1.TranslatorError; } });
+Object.defineProperty(exports, "UrlFetchError", { enumerable: true, get: function () { return types_1.UrlFetchError; } });
 // Export content extraction utilities
 var content_extractor_1 = require("./utils/content-extractor");
 Object.defineProperty(exports, "ContentExtractor", { enumerable: true, get: function () { return content_extractor_1.ContentExtractor; } });

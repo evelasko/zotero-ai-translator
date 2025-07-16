@@ -1,62 +1,57 @@
 /**
- * AI Service for LangChain-powered content translation
+ * AI Service for LangChain-powered content translation with multi-provider support
  */
 
+import { BaseChatModel } from '@langchain/core/language_models/chat_models';
 import { StructuredOutputParser } from '@langchain/core/output_parsers';
 import { PromptTemplate } from '@langchain/core/prompts';
-import { ChatOpenAI } from '@langchain/openai';
 import { ZoteroItemData, ZoteroItemType } from '@zotero-suite/schema-types';
 import { z } from 'zod';
 import {
   AIClassificationError,
-  AIConfig,
   AIExtractionError,
+  AIProviderConfig,
   AIValidationError,
   ExtractedContent,
-  RequiredAIConfig
 } from '../types';
+import { ConfigValidator } from './config-validator';
+import { ProviderFactory } from './provider-factory';
 
 /**
- * AI Service class that handles the two-step AI translation process
+ * AI Service class that handles the two-step AI translation process with multi-provider support
  */
 export class AIService {
-  private readonly config: RequiredAIConfig;
-  private readonly classificationModel: ChatOpenAI;
-  private readonly extractionModel: ChatOpenAI;
+  private readonly config: AIProviderConfig;
+  private readonly classificationModel: BaseChatModel;
+  private readonly extractionModel: BaseChatModel;
+  private readonly provider: string;
 
-  constructor(config: AIConfig) {
-    this.config = {
-      apiKey: config.apiKey,
-      classificationModel: config.classificationModel ?? 'gpt-3.5-turbo',
-      extractionModel: config.extractionModel ?? 'gpt-3.5-turbo',
-      temperature: config.temperature ?? 0.1,
-      maxTokens: config.maxTokens ?? 2000,
-      ...(config.baseURL && { baseURL: config.baseURL }),
-    };
+  constructor(config: AIProviderConfig) {
+    // Validate the configuration
+    ConfigValidator.validateProviderConfig(config);
+    
+    this.config = config;
+    this.provider = config.provider;
 
-    // Initialize classification model
-    this.classificationModel = new ChatOpenAI({
-      modelName: this.config.classificationModel,
-      temperature: this.config.temperature,
-      maxTokens: this.config.maxTokens,
-      openAIApiKey: this.config.apiKey,
-      ...(this.config.baseURL && { configuration: { baseURL: this.config.baseURL } }),
-    });
-
-    // Initialize extraction model
-    this.extractionModel = new ChatOpenAI({
-      modelName: this.config.extractionModel,
-      temperature: this.config.temperature,
-      maxTokens: this.config.maxTokens,
-      openAIApiKey: this.config.apiKey,
-      configuration: this.config.baseURL ? { baseURL: this.config.baseURL } : undefined,
-    });
+    // Create provider and models
+    const providerInstance = ProviderFactory.createProvider(config);
+    
+    this.classificationModel = providerInstance.createClassificationModel(config);
+    this.extractionModel = providerInstance.createExtractionModel(config);
   }
 
   /**
    * Main AI translation method that executes the two-step process
    */
-  async translateContent(content: ExtractedContent): Promise<{ item: ZoteroItemData; confidence: number }> {
+  async translateContent(content: ExtractedContent): Promise<{ 
+    item: ZoteroItemData; 
+    confidence: number;
+    provider: string;
+    modelsUsed: {
+      classification: string;
+      extraction: string;
+    };
+  }> {
     try {
       // Step 1: Classification - determine the item type
       const itemType = await this.classifyContent(content);
@@ -70,6 +65,11 @@ export class AIService {
       return {
         item: validatedItem,
         confidence: this.calculateConfidence(content, validatedItem),
+        provider: this.provider,
+        modelsUsed: {
+          classification: this.getModelName('classification'),
+          extraction: this.getModelName('extraction'),
+        },
       };
     } catch (error) {
       if (error instanceof AIClassificationError || 
@@ -98,67 +98,43 @@ Given the following content, determine the most appropriate Zotero item type fro
 - journalArticle: Academic journal articles, research papers
 - book: Books, monographs, edited volumes
 - bookSection: Book chapters, sections within books
-- document: PDFs, reports, whitepapers, working papers
-- thesis: Dissertations, theses, academic projects
-- conferencePaper: Conference proceedings, presentations
-- report: Technical reports, government documents
-- blogPost: Blog entries, online posts
+- document: Reports, working papers, white papers
+- conferencePaper: Conference proceedings, conference papers
+- thesis: Dissertations, theses
 - newspaperArticle: News articles, newspaper content
 - magazineArticle: Magazine articles, popular press
-- patent: Patent documents
-- case: Legal cases, court documents
-- statute: Legal statutes, regulations
-- hearing: Congressional hearings, testimonies
-- bill: Legislative bills, proposed laws
-- videoRecording: Videos, documentaries, lectures
-- podcast: Audio content, interviews
-- presentation: Slides, presentations
-- email: Email communications
-- letter: Correspondence, personal letters
-- manuscript: Unpublished manuscripts, drafts
-- map: Maps, geographical content
-- artwork: Images, artwork, visual content
-- software: Code repositories, applications
-- dataset: Data collections, databases
+- blogPost: Blog posts, personal articles
+- forumPost: Forum discussions, community posts
+- podcast: Podcast episodes, audio content
+- videoRecording: Video content, lectures, presentations
 
-Content Information:
-- Title: {title}
-- URL: {url}
-- Content Type: {contentType}
-- Text Preview: {textPreview}
-- Metadata: {metadata}
+Analyze the content and respond with ONLY the item type (e.g., "journalArticle", "webpage", etc.).
 
-Instructions:
-1. Analyze the content characteristics
-2. Consider the source (URL, content type, metadata)
-3. Look for academic indicators (citations, abstracts, methodology)
-4. Identify publication patterns and format clues
-5. Choose the SINGLE most appropriate item type
-6. Respond with ONLY the item type name (e.g., "journalArticle")
+Title: {title}
+URL: {url}
+Content Type: {contentType}
+Content Preview: {contentPreview}
 
 Item Type:`);
 
-      const textPreview = content.text.substring(0, 1000);
-      const metadata = JSON.stringify(content.metadata || {});
+      const contentPreview = content.text.substring(0, 1000);
       
-      const classificationChain = classificationPrompt.pipe(this.classificationModel);
-      
-      const result = await classificationChain.invoke({
-        title: content.title || 'No title',
-        url: content.url || 'No URL',
-        contentType: content.contentType || 'text/plain',
-        textPreview,
-        metadata,
-      });
+      const result = await this.classificationModel.invoke(
+        await classificationPrompt.format({
+          title: content.title || 'Unknown',
+          url: content.url || 'Unknown',
+          contentType: content.contentType || 'Unknown',
+          contentPreview,
+        })
+      );
 
       const itemType = result.content.toString().trim().toLowerCase();
       
-      // Validate that we got a valid item type
+      // Validate that the returned item type is valid
       const validItemTypes = [
-        'webpage', 'journalarticle', 'book', 'booksection', 'document', 'thesis',
-        'conferencepaper', 'report', 'blogpost', 'newspaperarticle', 'magazinearticle',
-        'patent', 'case', 'statute', 'hearing', 'bill', 'videorecording', 'podcast',
-        'presentation', 'email', 'letter', 'manuscript', 'map', 'artwork', 'software', 'dataset'
+        'webpage', 'journalarticle', 'book', 'booksection', 'document',
+        'conferencepaper', 'thesis', 'newspaperarticle', 'magazinearticle',
+        'blogpost', 'forumpost', 'podcast', 'videorecording'
       ];
       
       if (!validItemTypes.includes(itemType)) {
@@ -167,6 +143,10 @@ Item Type:`);
       
       return itemType;
     } catch (error) {
+      if (error instanceof AIClassificationError) {
+        throw error;
+      }
+      
       throw new AIClassificationError(
         'Failed to classify content',
         error instanceof Error ? error : new Error(String(error))
@@ -177,54 +157,44 @@ Item Type:`);
   /**
    * Step 2: Extraction - extract structured data using dynamic Zod schema
    */
-  private async extractStructuredData(content: ExtractedContent, itemType: string): Promise<unknown> {
+  private async extractStructuredData(content: ExtractedContent, itemType: string): Promise<Record<string, unknown>> {
     try {
-      // Get the appropriate Zod schema for the item type
+      // Get the appropriate schema for the item type
       const schema = this.getSchemaForItemType(itemType);
       
-      // Create structured output parser
+      // Create output parser
       const parser = StructuredOutputParser.fromZodSchema(schema);
       
       // Create extraction prompt
       const extractionPrompt = PromptTemplate.fromTemplate(`
-You are a skilled bibliographic data extraction expert. Extract structured metadata from the given content.
+You are a bibliographic data extraction expert. Extract structured metadata from the given content for a Zotero item of type "{itemType}".
 
-Content Information:
-- Title: {title}
-- URL: {url}
-- Content Type: {contentType}
-- Full Text: {fullText}
-- Existing Metadata: {metadata}
-
-Target Item Type: {itemType}
-
-Instructions:
-1. Carefully analyze the content to extract relevant bibliographic information
-2. Focus on accuracy and completeness
-3. Use the existing metadata when available and reliable
-4. Infer missing information from context when reasonable
-5. For dates, use ISO format (YYYY-MM-DD) when possible
-6. For creators, separate first and last names properly
-7. Extract tags that represent key topics or themes
-8. Leave fields empty if information is not available or cannot be reliably inferred
+Extract as much relevant information as possible, but only include fields that you can confidently determine from the content. Leave fields empty if the information is not available or uncertain.
 
 {format_instructions}
 
+Title: {title}
+URL: {url}
+Content Type: {contentType}
+Full Content: {fullContent}
+
 Extracted Data:`);
 
-      const extractionChain = extractionPrompt.pipe(this.extractionModel).pipe(parser);
-      
-      const result = await extractionChain.invoke({
+      const formattedPrompt = await extractionPrompt.format({
+        itemType,
         title: content.title || '',
         url: content.url || '',
-        contentType: content.contentType || 'text/plain',
-        fullText: content.text,
-        metadata: JSON.stringify(content.metadata || {}),
-        itemType,
+        contentType: content.contentType || '',
+        fullContent: content.text,
         format_instructions: parser.getFormatInstructions(),
       });
 
-      return result;
+      const result = await this.extractionModel.invoke(formattedPrompt);
+      
+      // Parse the result using the output parser
+      const parsedResult = await parser.parse(result.content.toString());
+      
+      return parsedResult;
     } catch (error) {
       throw new AIExtractionError(
         'Failed to extract structured data',
@@ -238,34 +208,30 @@ Extracted Data:`);
    */
   private async validateExtractedData(extractedData: unknown, itemType: string): Promise<ZoteroItemData> {
     try {
+      // Get the appropriate schema for validation
       const schema = this.getSchemaForItemType(itemType);
       
-      // Use safeParse for validation
-      const result = schema.safeParse(extractedData);
+      // Validate the extracted data
+      const validationResult = schema.safeParse(extractedData);
       
-      if (!result.success) {
+      if (!validationResult.success) {
         throw new AIValidationError(
-          `Validation failed for item type ${itemType}: ${result.error.message}`
+          `Validation failed: ${validationResult.error.message}`
         );
       }
-
-      // Add required fields that might be missing
-      const validatedData = result.data as ZoteroItemData;
       
-      // Ensure required fields are present
-      const finalItem: ZoteroItemData = {
-        ...(validatedData as object),
-        itemType: itemType as unknown as ZoteroItemType, // Fix the type assertion
-        dateAdded: validatedData.dateAdded || new Date().toISOString(),
-        dateModified: validatedData.dateModified || new Date().toISOString(),
-        creators: validatedData.creators || [],
-        tags: validatedData.tags || [],
-        collections: validatedData.collections || [],
-        relations: validatedData.relations || {},
+      // Ensure the item type is set correctly
+      const validatedData = {
+        ...validationResult.data,
+        itemType: itemType as ZoteroItemType,
       };
-
-      return finalItem;
+      
+      return validatedData as ZoteroItemData;
     } catch (error) {
+      if (error instanceof AIValidationError) {
+        throw error;
+      }
+      
       throw new AIValidationError(
         'Failed to validate extracted data',
         error instanceof Error ? error : new Error(String(error))
@@ -276,49 +242,136 @@ Extracted Data:`);
   /**
    * Get the appropriate Zod schema for the given item type
    */
-  private getSchemaForItemType(itemType: string): z.ZodSchema {
-    // For now, we'll use a generic schema that works for most item types
-    // In a full implementation, this would dynamically select the appropriate schema
-    // from @zotero-suite/schema-types based on the item type
-    
-    return z.object({
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private getSchemaForItemType(itemType: string): z.ZodObject<any> {
+    // Base schema with common fields
+    const baseSchema = {
       title: z.string().optional(),
       creators: z.array(z.object({
-        creatorType: z.string(),
         firstName: z.string().optional(),
         lastName: z.string(),
+        creatorType: z.string().default('author'),
       })).optional(),
-      abstractNote: z.string().optional(),
+      date: z.string().optional(),
       url: z.string().optional(),
       accessDate: z.string().optional(),
-      date: z.string().optional(),
-      language: z.string().optional(),
-      tags: z.array(z.object({
-        tag: z.string(),
-        type: z.number().optional(),
-      })).optional(),
-      extra: z.string().optional(),
-      // Add item-type specific fields based on the itemType
-      ...(itemType === 'journalarticle' && {
-        publicationTitle: z.string().optional(),
-        volume: z.string().optional(),
-        issue: z.string().optional(),
-        pages: z.string().optional(),
-        DOI: z.string().optional(),
-        ISSN: z.string().optional(),
-      }),
-      ...(itemType === 'book' && {
-        publisher: z.string().optional(),
-        place: z.string().optional(),
-        ISBN: z.string().optional(),
-        numPages: z.string().optional(),
-        edition: z.string().optional(),
-      }),
-      ...(itemType === 'webpage' && {
-        websiteTitle: z.string().optional(),
-        websiteType: z.string().optional(),
-      }),
-    });
+      abstractNote: z.string().optional(),
+      tags: z.array(z.string()).optional(),
+      notes: z.array(z.string()).optional(),
+    };
+
+    // Extend base schema based on item type
+    switch (itemType) {
+      case 'journalarticle':
+        return z.object({
+          ...baseSchema,
+          publicationTitle: z.string().optional(),
+          volume: z.string().optional(),
+          issue: z.string().optional(),
+          pages: z.string().optional(),
+          DOI: z.string().optional(),
+          ISSN: z.string().optional(),
+        });
+        
+      case 'book':
+        return z.object({
+          ...baseSchema,
+          publisher: z.string().optional(),
+          place: z.string().optional(),
+          ISBN: z.string().optional(),
+          edition: z.string().optional(),
+          numPages: z.string().optional(),
+        });
+        
+      case 'booksection':
+        return z.object({
+          ...baseSchema,
+          bookTitle: z.string().optional(),
+          publisher: z.string().optional(),
+          place: z.string().optional(),
+          pages: z.string().optional(),
+          ISBN: z.string().optional(),
+        });
+        
+      case 'conferencepaper':
+        return z.object({
+          ...baseSchema,
+          proceedingsTitle: z.string().optional(),
+          conferenceName: z.string().optional(),
+          place: z.string().optional(),
+          pages: z.string().optional(),
+          DOI: z.string().optional(),
+        });
+        
+      case 'thesis':
+        return z.object({
+          ...baseSchema,
+          university: z.string().optional(),
+          place: z.string().optional(),
+          thesisType: z.string().optional(),
+          numPages: z.string().optional(),
+        });
+        
+      case 'newspaperarticle':
+        return z.object({
+          ...baseSchema,
+          publicationTitle: z.string().optional(),
+          section: z.string().optional(),
+          place: z.string().optional(),
+          edition: z.string().optional(),
+        });
+        
+      case 'magazinearticle':
+        return z.object({
+          ...baseSchema,
+          publicationTitle: z.string().optional(),
+          volume: z.string().optional(),
+          issue: z.string().optional(),
+          pages: z.string().optional(),
+          ISSN: z.string().optional(),
+        });
+        
+      case 'blogpost':
+        return z.object({
+          ...baseSchema,
+          blogTitle: z.string().optional(),
+          websiteType: z.string().default('Blog'),
+        });
+        
+      case 'podcast':
+        return z.object({
+          ...baseSchema,
+          seriesTitle: z.string().optional(),
+          episodeNumber: z.string().optional(),
+          audioRecordingFormat: z.string().optional(),
+          runningTime: z.string().optional(),
+        });
+        
+      case 'videorecording':
+        return z.object({
+          ...baseSchema,
+          studio: z.string().optional(),
+          runningTime: z.string().optional(),
+          videoRecordingFormat: z.string().optional(),
+        });
+        
+      case 'document':
+        return z.object({
+          ...baseSchema,
+          publisher: z.string().optional(),
+          place: z.string().optional(),
+          reportNumber: z.string().optional(),
+          institution: z.string().optional(),
+        });
+        
+      case 'webpage':
+      default:
+        return z.object({
+          ...baseSchema,
+          websiteTitle: z.string().optional(),
+          websiteType: z.string().optional(),
+        });
+    }
   }
 
   /**
@@ -327,17 +380,59 @@ Extracted Data:`);
   private calculateConfidence(content: ExtractedContent, item: ZoteroItemData): number {
     let confidence = 0.5; // Base confidence
     
-    // Increase confidence based on available data
+    // Increase confidence based on available metadata
     if (item.title) confidence += 0.2;
-    if (item.creators && item.creators.length > 0) confidence += 0.1;
+    if (item.creators && item.creators.length > 0) confidence += 0.15;
     if (item.date) confidence += 0.1;
-    if (item.abstractNote) confidence += 0.1;
-    if (content.url) confidence += 0.1;
+    if (item.url) confidence += 0.05;
     
-    // Decrease confidence for very short content
-    if (content.text.length < 100) confidence -= 0.2;
+    // Increase confidence based on content quality
+    if (content.title) confidence += 0.1;
+    if (content.metadata?.author) confidence += 0.1;
+    if (content.metadata?.publishedDate) confidence += 0.1;
     
-    // Ensure confidence is between 0 and 1
-    return Math.max(0, Math.min(1, confidence));
+    // Cap confidence at 1.0
+    return Math.min(confidence, 1.0);
+  }
+
+  /**
+   * Get the model name for a specific purpose
+   */
+  private getModelName(purpose: 'classification' | 'extraction'): string {
+    switch (this.config.provider) {
+      case 'openai':
+        return purpose === 'classification' 
+          ? this.config.classificationModel || 'gpt-4o-mini'
+          : this.config.extractionModel || 'gpt-4o-mini';
+      case 'anthropic':
+        return purpose === 'classification'
+          ? this.config.classificationModel || 'claude-3-haiku-20240307'
+          : this.config.extractionModel || 'claude-3-5-sonnet-20241022';
+      case 'vertexai':
+        return purpose === 'classification'
+          ? this.config.classificationModel || 'gemini-1.5-flash'
+          : this.config.extractionModel || 'gemini-1.5-pro';
+      case 'ollama':
+        return purpose === 'classification'
+          ? this.config.classificationModel || 'llama3.1:8b'
+          : this.config.extractionModel || 'llama3.1:8b';
+      default:
+        return 'unknown';
+    }
+  }
+
+  /**
+   * Get provider configuration for debugging
+   */
+  getProviderInfo(): {
+    provider: string;
+    classificationModel: string;
+    extractionModel: string;
+  } {
+    return {
+      provider: this.provider,
+      classificationModel: this.getModelName('classification'),
+      extractionModel: this.getModelName('extraction'),
+    };
   }
 }

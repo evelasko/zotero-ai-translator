@@ -9,99 +9,120 @@ import { ContentExtractionError, PdfParseError, UrlFetchError } from '../types';
 
 // Mock axios
 vi.mock('axios');
-const mockedAxios = axios as any;
+const mockedAxiosGet = vi.mocked(axios.get);
 
-// Mock PDF parser
+// Mock LangChain modules for AI testing
+vi.mock('@langchain/openai', () => ({
+  ChatOpenAI: vi.fn().mockImplementation(() => ({
+    invoke: vi.fn().mockResolvedValue({
+      content: JSON.stringify({
+        itemType: 'journalArticle',
+        title: 'AI-Extracted Article Title',
+        creators: [{ firstName: 'AI', lastName: 'Author', creatorType: 'author' }],
+        abstractNote: 'AI-extracted abstract',
+      }),
+    }),
+  })),
+}));
+
+vi.mock('@langchain/anthropic', () => ({
+  ChatAnthropic: vi.fn().mockImplementation(() => ({
+    invoke: vi.fn().mockResolvedValue({
+      content: JSON.stringify({
+        itemType: 'journalArticle',
+        title: 'AI-Extracted Article Title',
+        creators: [{ firstName: 'AI', lastName: 'Author', creatorType: 'author' }],
+        abstractNote: 'AI-extracted abstract',
+      }),
+    }),
+  })),
+}));
+
+vi.mock('@langchain/google-vertexai', () => ({
+  ChatVertexAI: vi.fn().mockImplementation(() => ({
+    invoke: vi.fn().mockResolvedValue({
+      content: JSON.stringify({
+        itemType: 'journalArticle',
+        title: 'AI-Extracted Article Title',
+        creators: [{ firstName: 'AI', lastName: 'Author', creatorType: 'author' }],
+        abstractNote: 'AI-extracted abstract',
+      }),
+    }),
+  })),
+}));
+
+vi.mock('@langchain/ollama', () => ({
+  ChatOllama: vi.fn().mockImplementation(() => ({
+    invoke: vi.fn().mockResolvedValue({
+      content: JSON.stringify({
+        itemType: 'journalArticle',
+        title: 'AI-Extracted Article Title',
+        creators: [{ firstName: 'AI', lastName: 'Author', creatorType: 'author' }],
+        abstractNote: 'AI-extracted abstract',
+      }),
+    }),
+  })),
+}));
+
+// Mock @mozilla/readability
+vi.mock('@mozilla/readability', () => ({
+  Readability: vi.fn().mockImplementation(() => ({
+    parse: vi.fn().mockReturnValue({
+      title: 'Test Article Title',
+      content: '<p>This is extracted content from Readability.</p>',
+      textContent: 'This is extracted content from Readability.',
+      excerpt: 'This is an excerpt from the article.',
+      byline: 'By Test Author',
+      dir: 'ltr',
+      lang: 'en',
+    }),
+  })),
+}));
+
+// Mock pdf-parse
 vi.mock('pdf-parse', () => ({
   default: vi.fn(),
 }));
 
-// Mock JSDOM and Readability
+// Mock JSDOM
 vi.mock('jsdom', () => ({
-  JSDOM: vi.fn().mockImplementation((html: string) => ({
+  JSDOM: vi.fn().mockImplementation(_html => ({
     window: {
       document: {
-        documentElement: {
-          outerHTML: html,
-        },
+        title: 'Test Page Title',
+        querySelector: vi.fn(selector => {
+          if (selector === 'meta[name="author"]') {
+            return { getAttribute: () => 'John Doe' };
+          }
+          if (selector === 'meta[name="description"]') {
+            return { getAttribute: () => 'Test article description' };
+          }
+          return null;
+        }),
+        querySelectorAll: vi.fn(() => []),
       },
     },
   })),
 }));
 
-vi.mock('@mozilla/readability', () => ({
-  Readability: vi.fn().mockImplementation(() => ({
-    parse: vi.fn().mockReturnValue({
-      title: 'Test Article Title',
-      textContent: 'This is the main content of the article extracted by Readability.',
-      excerpt: 'This is an excerpt from the article.',
-      author: 'John Doe',
-      publishedTime: '2023-01-01T00:00:00Z',
-      language: 'en',
-    }),
-  })),
-}));
-
-// Mock LangChain modules
-vi.mock('@langchain/openai', () => ({
-  ChatOpenAI: vi.fn().mockImplementation(() => ({
-    invoke: vi.fn().mockResolvedValue({
-      content: 'journalArticle',
-    }),
-  })),
-}));
-
-vi.mock('@langchain/core/prompts', () => ({
-  PromptTemplate: {
-    fromTemplate: vi.fn().mockReturnValue({
-      pipe: vi.fn().mockReturnValue({
-        invoke: vi.fn().mockResolvedValue({
-          content: 'journalArticle',
-        }),
-      }),
-    }),
-  },
-}));
-
+// Mock LangChain output parsers
 vi.mock('@langchain/core/output_parsers', () => ({
   StructuredOutputParser: {
     fromZodSchema: vi.fn().mockReturnValue({
       getFormatInstructions: vi.fn().mockReturnValue('Format instructions'),
-      parse: vi.fn().mockResolvedValue({
-        itemType: 'journalArticle',
-        title: 'AI-Extracted Article Title',
-        creators: [{ creatorType: 'author', firstName: 'John', lastName: 'Doe' }],
-        abstractNote: 'AI-extracted abstract',
-        date: '2023-01-01',
-        language: 'en',
-        url: 'https://example.com/article',
-        tags: [],
-        collections: [],
-        relations: {},
-      }),
     }),
   },
   OutputFixingParser: {
     fromLLM: vi.fn().mockReturnValue({
-      parse: vi.fn().mockResolvedValue({
-        itemType: 'journalArticle',
-        title: 'Fixed Article Title',
-        creators: [{ creatorType: 'author', firstName: 'John', lastName: 'Doe' }],
-        abstractNote: 'Fixed abstract',
-        date: '2023-01-01',
-        language: 'en',
-        url: 'https://example.com/article',
-        tags: [],
-        collections: [],
-        relations: {},
-      }),
+      // Mock parser
     }),
   },
 }));
 
 describe('Translator - URL Input Path', () => {
   let translator: Translator;
-  let translatorWithAI: Translator;
+  let translatorWithOpenAI: Translator;
+  let translatorWithAnthropic: Translator;
 
   beforeAll(() => {
     // Mock console methods to avoid noise during tests
@@ -117,12 +138,29 @@ describe('Translator - URL Input Path', () => {
       debug: false,
     });
 
-    translatorWithAI = new Translator({
+    translatorWithOpenAI = new Translator({
       timeout: 5000,
       maxRetries: 1,
       debug: false,
       ai: {
-        apiKey: 'test-api-key',
+        provider: 'openai',
+        apiKey: 'sk-test-api-key',
+        classificationModel: 'gpt-3.5-turbo',
+        extractionModel: 'gpt-3.5-turbo',
+        temperature: 0.1,
+        maxTokens: 2000,
+      },
+    });
+
+    translatorWithAnthropic = new Translator({
+      timeout: 5000,
+      maxRetries: 1,
+      debug: false,
+      ai: {
+        provider: 'anthropic',
+        apiKey: 'sk-ant-test-api-key',
+        classificationModel: 'claude-3-haiku-20240307',
+        extractionModel: 'claude-3-5-sonnet-20241022',
         temperature: 0.1,
         maxTokens: 2000,
       },
@@ -156,7 +194,7 @@ describe('Translator - URL Input Path', () => {
         </html>
       `;
 
-      mockedAxios.get.mockResolvedValue({
+      mockedAxiosGet.mockResolvedValue({
         data: mockHtmlContent,
         headers: { 'content-type': 'text/html' },
         status: 200,
@@ -164,7 +202,7 @@ describe('Translator - URL Input Path', () => {
 
       const result = await translator.translate({ url: 'https://example.com/article' });
 
-      expect(mockedAxios.get).toHaveBeenCalledWith('https://example.com/article', {
+      expect(mockedAxiosGet).toHaveBeenCalledWith('https://example.com/article', {
         timeout: 5000,
         maxRedirects: 5,
         headers: {
@@ -184,7 +222,7 @@ describe('Translator - URL Input Path', () => {
       expect(result.extractedContent.contentType).toBe('text/html');
     });
 
-    it('should successfully fetch and translate HTML content with AI', async () => {
+    it('should successfully fetch and translate HTML content with OpenAI', async () => {
       const mockHtmlContent = `
         <!DOCTYPE html>
         <html>
@@ -201,18 +239,53 @@ describe('Translator - URL Input Path', () => {
         </html>
       `;
 
-      mockedAxios.get.mockResolvedValue({
+      mockedAxiosGet.mockResolvedValue({
         data: mockHtmlContent,
         headers: { 'content-type': 'text/html' },
         status: 200,
       });
 
-      const result = await translatorWithAI.translate({ url: 'https://example.com/research' });
+      const result = await translatorWithOpenAI.translate({ url: 'https://example.com/research' });
 
       expect(result).toHaveProperty('item');
       expect(result.item.itemType).toBe('journalArticle'); // Should be classified by AI
       expect(result.item.title).toBe('AI-Extracted Article Title');
       expect(result.processing.ingestionMethod).toBe('url');
+      expect(result.processing.aiProvider).toBe('openai');
+    });
+
+    it('should successfully fetch and translate HTML content with Anthropic', async () => {
+      const mockHtmlContent = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>Research Paper</title>
+          <meta name="author" content="Dr. Jane Smith">
+        </head>
+        <body>
+          <article>
+            <h1>Advanced Machine Learning Techniques</h1>
+            <p>This paper explores cutting-edge machine learning algorithms.</p>
+          </article>
+        </body>
+        </html>
+      `;
+
+      mockedAxiosGet.mockResolvedValue({
+        data: mockHtmlContent,
+        headers: { 'content-type': 'text/html' },
+        status: 200,
+      });
+
+      const result = await translatorWithAnthropic.translate({
+        url: 'https://example.com/research',
+      });
+
+      expect(result).toHaveProperty('item');
+      expect(result.item.itemType).toBe('journalArticle'); // Should be classified by AI
+      expect(result.item.title).toBe('AI-Extracted Article Title');
+      expect(result.processing.ingestionMethod).toBe('url');
+      expect(result.processing.aiProvider).toBe('anthropic');
     });
 
     it('should handle HTML with missing title gracefully', async () => {
@@ -225,7 +298,7 @@ describe('Translator - URL Input Path', () => {
         </html>
       `;
 
-      mockedAxios.get.mockResolvedValue({
+      mockedAxiosGet.mockResolvedValue({
         data: mockHtmlContent,
         headers: { 'content-type': 'text/html' },
         status: 200,
@@ -257,7 +330,7 @@ describe('Translator - URL Input Path', () => {
         </html>
       `;
 
-      mockedAxios.get.mockResolvedValue({
+      mockedAxiosGet.mockResolvedValue({
         data: mockHtmlContent,
         headers: { 'content-type': 'text/html' },
         status: 200,
@@ -278,7 +351,7 @@ describe('Translator - URL Input Path', () => {
       const mockPdfBuffer = Buffer.from('PDF content');
       const mockPdfParse = await import('pdf-parse');
 
-      mockedAxios.get.mockResolvedValue({
+      mockedAxiosGet.mockResolvedValue({
         data: mockPdfBuffer,
         headers: { 'content-type': 'application/pdf' },
         status: 200,
@@ -302,7 +375,7 @@ describe('Translator - URL Input Path', () => {
 
       const result = await translator.translate({ url: 'https://example.com/paper.pdf' });
 
-      expect(mockedAxios.get).toHaveBeenCalledWith('https://example.com/paper.pdf', {
+      expect(mockedAxiosGet).toHaveBeenCalledWith('https://example.com/paper.pdf', {
         timeout: 5000,
         maxRedirects: 5,
         headers: {
@@ -321,7 +394,7 @@ describe('Translator - URL Input Path', () => {
       const mockPdfBuffer = Buffer.from('Invalid PDF content');
       const mockPdfParse = await import('pdf-parse');
 
-      mockedAxios.get.mockResolvedValue({
+      mockedAxiosGet.mockResolvedValue({
         data: mockPdfBuffer,
         headers: { 'content-type': 'application/pdf' },
         status: 200,
@@ -337,7 +410,7 @@ describe('Translator - URL Input Path', () => {
 
   describe('Network Error Handling', () => {
     it('should handle network timeouts', async () => {
-      mockedAxios.get.mockRejectedValue({
+      mockedAxiosGet.mockRejectedValue({
         code: 'ECONNABORTED',
         message: 'timeout of 5000ms exceeded',
       });
@@ -348,7 +421,7 @@ describe('Translator - URL Input Path', () => {
     });
 
     it('should handle HTTP error responses', async () => {
-      mockedAxios.get.mockRejectedValue({
+      mockedAxiosGet.mockRejectedValue({
         response: {
           status: 404,
           statusText: 'Not Found',
@@ -362,7 +435,7 @@ describe('Translator - URL Input Path', () => {
     });
 
     it('should handle DNS resolution errors', async () => {
-      mockedAxios.get.mockRejectedValue({
+      mockedAxiosGet.mockRejectedValue({
         code: 'ENOTFOUND',
         message: 'getaddrinfo ENOTFOUND invalid-domain.com',
       });
@@ -373,7 +446,7 @@ describe('Translator - URL Input Path', () => {
     });
 
     it('should handle connection refused errors', async () => {
-      mockedAxios.get.mockRejectedValue({
+      mockedAxiosGet.mockRejectedValue({
         code: 'ECONNREFUSED',
         message: 'connect ECONNREFUSED 127.0.0.1:80',
       });
@@ -388,7 +461,7 @@ describe('Translator - URL Input Path', () => {
     it('should handle plain text content', async () => {
       const mockTextContent = 'This is plain text content from a .txt file or plain text response.';
 
-      mockedAxios.get.mockResolvedValue({
+      mockedAxiosGet.mockResolvedValue({
         data: mockTextContent,
         headers: { 'content-type': 'text/plain' },
         status: 200,
@@ -402,7 +475,7 @@ describe('Translator - URL Input Path', () => {
     });
 
     it('should handle unsupported content types', async () => {
-      mockedAxios.get.mockResolvedValue({
+      mockedAxiosGet.mockResolvedValue({
         data: 'Binary content',
         headers: { 'content-type': 'application/octet-stream' },
         status: 200,
@@ -417,7 +490,7 @@ describe('Translator - URL Input Path', () => {
       const mockHtmlContent =
         '<html><body><p>Content without content-type header</p></body></html>';
 
-      mockedAxios.get.mockResolvedValue({
+      mockedAxiosGet.mockResolvedValue({
         data: mockHtmlContent,
         headers: {},
         status: 200,
@@ -439,7 +512,7 @@ describe('Translator - URL Input Path', () => {
       });
 
       // First two calls fail, third succeeds
-      mockedAxios.get
+      mockedAxiosGet
         .mockRejectedValueOnce(new Error('Network error'))
         .mockRejectedValueOnce(new Error('Network error'))
         .mockResolvedValue({
@@ -450,7 +523,7 @@ describe('Translator - URL Input Path', () => {
 
       const result = await retryTranslator.translate({ url: 'https://flaky-server.com/article' });
 
-      expect(mockedAxios.get).toHaveBeenCalledTimes(3);
+      expect(mockedAxiosGet).toHaveBeenCalledTimes(3);
       expect(result.item.itemType).toBe('webpage');
     });
 
@@ -461,7 +534,7 @@ describe('Translator - URL Input Path', () => {
         debug: false,
       });
 
-      mockedAxios.get
+      mockedAxiosGet
         .mockRejectedValueOnce(new Error('Network error'))
         .mockRejectedValueOnce(new Error('Network error'));
 
@@ -469,7 +542,7 @@ describe('Translator - URL Input Path', () => {
         retryTranslator.translate({ url: 'https://always-failing.com/article' }),
       ).rejects.toThrow(UrlFetchError);
 
-      expect(mockedAxios.get).toHaveBeenCalledTimes(2); // Initial + 1 retry
+      expect(mockedAxiosGet).toHaveBeenCalledTimes(2); // Initial + 1 retry
     });
   });
 
@@ -481,7 +554,7 @@ describe('Translator - URL Input Path', () => {
       });
 
       const longContent = 'A'.repeat(200);
-      mockedAxios.get.mockResolvedValue({
+      mockedAxiosGet.mockResolvedValue({
         data: `<html><body><p>${longContent}</p></body></html>`,
         headers: { 'content-type': 'text/html' },
         status: 200,
@@ -504,7 +577,7 @@ describe('Translator - URL Input Path', () => {
     });
 
     it('should accept valid URLs', async () => {
-      mockedAxios.get.mockResolvedValue({
+      mockedAxiosGet.mockResolvedValue({
         data: '<html><body><p>Valid URL content</p></body></html>',
         headers: { 'content-type': 'text/html' },
         status: 200,

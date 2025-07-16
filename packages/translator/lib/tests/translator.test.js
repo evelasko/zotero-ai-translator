@@ -12,14 +12,20 @@ vitest_1.vi.mock('@langchain/openai', () => ({
     // Mock implementation
     })),
 }));
-vitest_1.vi.mock('@langchain/core/prompts', () => ({
-    PromptTemplate: {
-        fromTemplate: vitest_1.vi.fn().mockReturnValue({
-            pipe: vitest_1.vi.fn().mockReturnValue({
-                invoke: vitest_1.vi.fn(),
-            }),
-        }),
-    },
+vitest_1.vi.mock('@langchain/anthropic', () => ({
+    ChatAnthropic: vitest_1.vi.fn().mockImplementation(() => ({
+    // Mock implementation
+    })),
+}));
+vitest_1.vi.mock('@langchain/google-vertexai', () => ({
+    ChatVertexAI: vitest_1.vi.fn().mockImplementation(() => ({
+    // Mock implementation
+    })),
+}));
+vitest_1.vi.mock('@langchain/ollama', () => ({
+    ChatOllama: vitest_1.vi.fn().mockImplementation(() => ({
+    // Mock implementation
+    })),
 }));
 vitest_1.vi.mock('@langchain/core/output_parsers', () => ({
     StructuredOutputParser: {
@@ -84,9 +90,10 @@ vitest_1.vi.mock('@langchain/core/output_parsers', () => ({
             (0, vitest_1.expect)(() => new translator_1.Translator({ userAgent: '' })).toThrow(types_1.ConfigurationError);
             (0, vitest_1.expect)(() => new translator_1.Translator({ userAgent: '   ' })).toThrow(types_1.ConfigurationError);
         });
-        (0, vitest_1.it)('should create translator with AI configuration', () => {
+        (0, vitest_1.it)('should create translator with OpenAI provider configuration', () => {
             const aiConfig = {
-                apiKey: 'test-api-key',
+                provider: 'openai',
+                apiKey: 'sk-test-api-key',
                 classificationModel: 'gpt-3.5-turbo',
                 extractionModel: 'gpt-3.5-turbo',
                 temperature: 0.1,
@@ -97,24 +104,67 @@ vitest_1.vi.mock('@langchain/core/output_parsers', () => ({
             };
             (0, vitest_1.expect)(() => new translator_1.Translator(configWithAI)).not.toThrow();
         });
-        (0, vitest_1.it)('should throw error for invalid AI configuration', () => {
-            (0, vitest_1.expect)(() => new translator_1.Translator({ ai: { apiKey: '' } })).toThrow(types_1.ConfigurationError);
-            (0, vitest_1.expect)(() => new translator_1.Translator({ ai: { apiKey: '   ' } })).toThrow(types_1.ConfigurationError);
+        (0, vitest_1.it)('should create translator with Anthropic provider configuration', () => {
+            const aiConfig = {
+                provider: 'anthropic',
+                apiKey: 'sk-ant-test-api-key',
+                classificationModel: 'claude-3-haiku-20240307',
+                extractionModel: 'claude-3-5-sonnet-20241022',
+                temperature: 0.1,
+                maxTokens: 2000,
+            };
+            const configWithAI = {
+                ai: aiConfig,
+            };
+            (0, vitest_1.expect)(() => new translator_1.Translator(configWithAI)).not.toThrow();
+        });
+        (0, vitest_1.it)('should create translator with VertexAI provider configuration', () => {
+            const aiConfig = {
+                provider: 'vertexai',
+                projectId: 'test-project',
+                location: 'us-central1',
+                classificationModel: 'gemini-1.5-flash-002',
+                extractionModel: 'gemini-1.5-pro-002',
+                temperature: 0.1,
+                maxTokens: 2000,
+            };
+            const configWithAI = {
+                ai: aiConfig,
+            };
+            (0, vitest_1.expect)(() => new translator_1.Translator(configWithAI)).not.toThrow();
+        });
+        (0, vitest_1.it)('should create translator with Ollama provider configuration', () => {
+            const aiConfig = {
+                provider: 'ollama',
+                baseUrl: 'http://localhost:11434',
+                classificationModel: 'llama3.1:8b',
+                extractionModel: 'llama3.1:70b',
+                temperature: 0.1,
+                maxTokens: 2000,
+            };
+            const configWithAI = {
+                ai: aiConfig,
+            };
+            (0, vitest_1.expect)(() => new translator_1.Translator(configWithAI)).not.toThrow();
+        });
+        (0, vitest_1.it)('should throw error for invalid AI provider configuration', () => {
+            (0, vitest_1.expect)(() => new translator_1.Translator({ ai: { provider: 'openai', apiKey: '' } })).toThrow(types_1.ConfigurationError);
+            (0, vitest_1.expect)(() => new translator_1.Translator({ ai: { provider: 'openai', apiKey: '   ' } })).toThrow(types_1.ConfigurationError);
         });
         (0, vitest_1.it)('should throw error for invalid AI temperature', () => {
             (0, vitest_1.expect)(() => new translator_1.Translator({
-                ai: { apiKey: 'test-key', temperature: -1 },
+                ai: { provider: 'openai', apiKey: 'test-key', temperature: -1 },
             })).toThrow(types_1.ConfigurationError);
             (0, vitest_1.expect)(() => new translator_1.Translator({
-                ai: { apiKey: 'test-key', temperature: 3 },
+                ai: { provider: 'openai', apiKey: 'test-key', temperature: 3 },
             })).toThrow(types_1.ConfigurationError);
         });
         (0, vitest_1.it)('should throw error for invalid AI max tokens', () => {
             (0, vitest_1.expect)(() => new translator_1.Translator({
-                ai: { apiKey: 'test-key', maxTokens: 0 },
+                ai: { provider: 'openai', apiKey: 'test-key', maxTokens: 0 },
             })).toThrow(types_1.ConfigurationError);
             (0, vitest_1.expect)(() => new translator_1.Translator({
-                ai: { apiKey: 'test-key', maxTokens: -100 },
+                ai: { provider: 'openai', apiKey: 'test-key', maxTokens: -100 },
             })).toThrow(types_1.ConfigurationError);
         });
     });
@@ -152,11 +202,15 @@ vitest_1.vi.mock('@langchain/core/output_parsers', () => ({
             (0, vitest_1.expect)(result.item).toHaveProperty('itemType');
             (0, vitest_1.expect)(result.item).toHaveProperty('title');
             (0, vitest_1.expect)(result.processing.ingestionMethod).toBe('sourceText');
+            (0, vitest_1.expect)(result.processing.aiProvider).toBeUndefined(); // No AI provider configured
         });
-        (0, vitest_1.it)('should work with AI configuration', async () => {
+        (0, vitest_1.it)('should work with OpenAI provider configuration', async () => {
             const aiTranslator = new translator_1.Translator({
                 ai: {
-                    apiKey: 'test-api-key',
+                    provider: 'openai',
+                    apiKey: 'sk-test-api-key',
+                    classificationModel: 'gpt-3.5-turbo',
+                    extractionModel: 'gpt-3.5-turbo',
                     temperature: 0.1,
                     maxTokens: 2000,
                 },
@@ -168,11 +222,34 @@ vitest_1.vi.mock('@langchain/core/output_parsers', () => ({
             (0, vitest_1.expect)(result).toHaveProperty('item');
             (0, vitest_1.expect)(result).toHaveProperty('confidence');
             (0, vitest_1.expect)(result.processing.ingestionMethod).toBe('sourceText');
+            (0, vitest_1.expect)(result.processing.aiProvider).toBe('openai');
+            (0, vitest_1.expect)(result.processing.modelsUsed).toBeDefined();
+        });
+        (0, vitest_1.it)('should work with Anthropic provider configuration', async () => {
+            const aiTranslator = new translator_1.Translator({
+                ai: {
+                    provider: 'anthropic',
+                    apiKey: 'sk-ant-test-api-key',
+                    classificationModel: 'claude-3-haiku-20240307',
+                    extractionModel: 'claude-3-5-sonnet-20241022',
+                    temperature: 0.1,
+                    maxTokens: 2000,
+                },
+                debug: false,
+            });
+            const validInput = { sourceText: 'This is a research paper about machine learning.' };
+            const result = await aiTranslator.translate(validInput);
+            (0, vitest_1.expect)(result).toHaveProperty('item');
+            (0, vitest_1.expect)(result).toHaveProperty('confidence');
+            (0, vitest_1.expect)(result.processing.ingestionMethod).toBe('sourceText');
+            (0, vitest_1.expect)(result.processing.aiProvider).toBe('anthropic');
+            (0, vitest_1.expect)(result.processing.modelsUsed).toBeDefined();
         });
         (0, vitest_1.it)('should fallback to basic extraction when AI fails', async () => {
             const aiTranslator = new translator_1.Translator({
                 ai: {
-                    apiKey: 'test-api-key',
+                    provider: 'openai',
+                    apiKey: 'invalid-api-key',
                 },
                 debug: false,
             });

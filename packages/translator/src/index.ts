@@ -5,26 +5,50 @@
 // Export the main Translator class
 export { Translator } from './core/translator';
 
+// Export provider system
+export {
+  ProviderDetector,
+  ProviderFactory,
+  getProviderStatus,
+  registerAllProviders,
+} from './core/providers';
+
+export { ConfigValidator } from './core/config-validator';
+
 // Export all types and interfaces
 export type {
-  TranslationInput,
-  UrlTranslationInput,
-  TextTranslationInput,
-  TranslatorConfig,
-  AIConfig,
+  // Provider types
+  AIProviderConfig,
+  AnthropicConfig,
+  AnthropicModel,
   ExtractedContent,
+  ProviderFactory as IProviderFactory,
+  LLMProvider,
+  ModelCapabilities,
+  OllamaConfig,
+  OllamaModel,
+  OpenAIConfig,
+  // Model types
+  OpenAIModel,
+  ProviderName,
+  TextTranslationInput,
+  TranslationInput,
   TranslationResult,
+  TranslatorConfig,
+  UrlTranslationInput,
+  VertexAIConfig,
+  VertexAIModel,
 } from './types';
 
 export {
-  TranslatorError,
-  ContentExtractionError,
-  UrlFetchError,
-  PdfParseError,
-  ConfigurationError,
   AIClassificationError,
   AIExtractionError,
   AIValidationError,
+  ConfigurationError,
+  ContentExtractionError,
+  PdfParseError,
+  TranslatorError,
+  UrlFetchError,
 } from './types';
 
 // Export content extraction utilities

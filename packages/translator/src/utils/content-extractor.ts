@@ -7,7 +7,7 @@ import axios, { AxiosRequestConfig } from 'axios';
 import { JSDOM } from 'jsdom';
 import pdfParse from 'pdf-parse';
 import { ContentExtractionError, ExtractedContent, PdfParseError, TranslatorConfig, UrlFetchError } from '../types';
-
+/// <reference lib="dom" />
 /**
  * Content extractor class for handling URL and PDF content extraction
  */
@@ -48,6 +48,7 @@ export class ContentExtractor {
     } catch (error) {
       throw new UrlFetchError(
         `Failed to fetch content from URL: ${url}`,
+        500,
         error instanceof Error ? error : new Error(String(error))
       );
     }
@@ -88,7 +89,8 @@ export class ContentExtractor {
   /**
    * Fetch URL with retry logic
    */
-  private async fetchWithRetry(url: string, attempt = 1): Promise<any> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private async fetchWithRetry(url: string, attempt = 1): Promise<Record<string, any>> {
     const config: AxiosRequestConfig = {
       timeout: this.config.timeout,
       headers: {
@@ -273,7 +275,8 @@ export class ContentExtractor {
   /**
    * Extract title from HTML document
    */
-  private extractTitleFromHtml(document: any): string | undefined {
+  // eslint-disable-next-line no-undef
+  private extractTitleFromHtml(document: Document): string | undefined {
     // Try title tag first
     const titleElement = document.querySelector('title');
     if (titleElement && titleElement.textContent) {

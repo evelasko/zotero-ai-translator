@@ -12,14 +12,20 @@ vitest_1.vi.mock('@langchain/openai', () => ({
     // Mock implementation
     })),
 }));
-vitest_1.vi.mock('@langchain/core/prompts', () => ({
-    PromptTemplate: {
-        fromTemplate: vitest_1.vi.fn().mockReturnValue({
-            pipe: vitest_1.vi.fn().mockReturnValue({
-                invoke: vitest_1.vi.fn(),
-            }),
-        }),
-    },
+vitest_1.vi.mock('@langchain/anthropic', () => ({
+    ChatAnthropic: vitest_1.vi.fn().mockImplementation(() => ({
+    // Mock implementation
+    })),
+}));
+vitest_1.vi.mock('@langchain/google-vertexai', () => ({
+    ChatVertexAI: vitest_1.vi.fn().mockImplementation(() => ({
+    // Mock implementation
+    })),
+}));
+vitest_1.vi.mock('@langchain/ollama', () => ({
+    ChatOllama: vitest_1.vi.fn().mockImplementation(() => ({
+    // Mock implementation
+    })),
 }));
 vitest_1.vi.mock('@langchain/core/output_parsers', () => ({
     StructuredOutputParser: {
@@ -39,7 +45,8 @@ vitest_1.vi.mock('@langchain/core/output_parsers', () => ({
     let mockContent;
     (0, vitest_1.beforeEach)(() => {
         mockConfig = {
-            apiKey: 'test-api-key',
+            provider: 'openai',
+            apiKey: 'sk-test-api-key',
             classificationModel: 'gpt-3.5-turbo',
             extractionModel: 'gpt-3.5-turbo',
             temperature: 0.1,
@@ -60,21 +67,73 @@ vitest_1.vi.mock('@langchain/core/output_parsers', () => ({
         aiService = new ai_service_1.AIService(mockConfig);
     });
     (0, vitest_1.describe)('constructor', () => {
-        (0, vitest_1.it)('should create AI service with default config', () => {
-            const minimalConfig = {
-                apiKey: 'test-key',
+        (0, vitest_1.it)('should create AI service with OpenAI config', () => {
+            const openaiConfig = {
+                provider: 'openai',
+                apiKey: 'sk-test-key',
             };
-            (0, vitest_1.expect)(() => new ai_service_1.AIService(minimalConfig)).not.toThrow();
+            (0, vitest_1.expect)(() => new ai_service_1.AIService(openaiConfig)).not.toThrow();
+        });
+        (0, vitest_1.it)('should create AI service with Anthropic config', () => {
+            const anthropicConfig = {
+                provider: 'anthropic',
+                apiKey: 'sk-ant-test-key',
+            };
+            (0, vitest_1.expect)(() => new ai_service_1.AIService(anthropicConfig)).not.toThrow();
+        });
+        (0, vitest_1.it)('should create AI service with VertexAI config', () => {
+            const vertexaiConfig = {
+                provider: 'vertexai',
+                projectId: 'test-project',
+                location: 'us-central1',
+            };
+            (0, vitest_1.expect)(() => new ai_service_1.AIService(vertexaiConfig)).not.toThrow();
+        });
+        (0, vitest_1.it)('should create AI service with Ollama config', () => {
+            const ollamaConfig = {
+                provider: 'ollama',
+                baseUrl: 'http://localhost:11434',
+            };
+            (0, vitest_1.expect)(() => new ai_service_1.AIService(ollamaConfig)).not.toThrow();
         });
         (0, vitest_1.it)('should create AI service with full config', () => {
             (0, vitest_1.expect)(() => new ai_service_1.AIService(mockConfig)).not.toThrow();
         });
-        (0, vitest_1.it)('should handle custom base URL', () => {
+        (0, vitest_1.it)('should handle OpenAI custom base URL', () => {
             const configWithBaseURL = {
-                ...mockConfig,
+                provider: 'openai',
+                apiKey: 'sk-test-api-key',
+                classificationModel: 'gpt-3.5-turbo',
+                extractionModel: 'gpt-3.5-turbo',
+                temperature: 0.1,
+                maxTokens: 2000,
                 baseURL: 'https://custom-api.example.com',
             };
             (0, vitest_1.expect)(() => new ai_service_1.AIService(configWithBaseURL)).not.toThrow();
+        });
+        (0, vitest_1.it)('should handle Anthropic custom headers', () => {
+            const configWithHeaders = {
+                provider: 'anthropic',
+                apiKey: 'sk-ant-test-key',
+                customHeaders: {
+                    'Custom-Header': 'test-value',
+                },
+            };
+            (0, vitest_1.expect)(() => new ai_service_1.AIService(configWithHeaders)).not.toThrow();
+        });
+        (0, vitest_1.it)('should handle VertexAI authentication', () => {
+            const configWithAuth = {
+                provider: 'vertexai',
+                projectId: 'test-project',
+                location: 'us-central1',
+                authOptions: {
+                    credentials: {
+                        client_email: 'test@example.com',
+                        private_key: 'test-key',
+                    },
+                },
+            };
+            (0, vitest_1.expect)(() => new ai_service_1.AIService(configWithAuth)).not.toThrow();
         });
     });
     (0, vitest_1.describe)('translateContent', () => {
@@ -87,6 +146,31 @@ vitest_1.vi.mock('@langchain/core/output_parsers', () => ({
             // This test would need proper mocking of LangChain responses
             // For now, we'll just verify the method exists and can be called
             (0, vitest_1.expect)(aiService.translateContent(mockContent)).toBeInstanceOf(Promise);
+        });
+        (0, vitest_1.it)('should handle different provider configurations', async () => {
+            const providers = [
+                {
+                    provider: 'openai',
+                    apiKey: 'sk-test-key',
+                },
+                {
+                    provider: 'anthropic',
+                    apiKey: 'sk-ant-test-key',
+                },
+                {
+                    provider: 'vertexai',
+                    projectId: 'test-project',
+                    location: 'us-central1',
+                },
+                {
+                    provider: 'ollama',
+                    baseUrl: 'http://localhost:11434',
+                },
+            ];
+            for (const config of providers) {
+                const service = new ai_service_1.AIService(config);
+                (0, vitest_1.expect)(service.translateContent(mockContent)).toBeInstanceOf(Promise);
+            }
         });
     });
     (0, vitest_1.describe)('error handling', () => {
@@ -109,8 +193,9 @@ vitest_1.vi.mock('@langchain/core/output_parsers', () => ({
         });
     });
     (0, vitest_1.describe)('configuration validation', () => {
-        (0, vitest_1.it)('should accept valid configuration', () => {
+        (0, vitest_1.it)('should accept valid OpenAI configuration', () => {
             const validConfig = {
+                provider: 'openai',
                 apiKey: 'sk-test-key',
                 classificationModel: 'gpt-4',
                 extractionModel: 'gpt-4',
@@ -119,12 +204,28 @@ vitest_1.vi.mock('@langchain/core/output_parsers', () => ({
             };
             (0, vitest_1.expect)(() => new ai_service_1.AIService(validConfig)).not.toThrow();
         });
-        (0, vitest_1.it)('should handle missing optional fields', () => {
-            const minimalConfig = {
-                apiKey: 'test-key',
+        (0, vitest_1.it)('should accept valid Anthropic configuration', () => {
+            const validConfig = {
+                provider: 'anthropic',
+                apiKey: 'sk-ant-test-key',
+                classificationModel: 'claude-3-5-sonnet-20241022',
+                extractionModel: 'claude-3-5-sonnet-20241022',
+                temperature: 0.2,
+                maxTokens: 4000,
             };
-            const service = new ai_service_1.AIService(minimalConfig);
-            (0, vitest_1.expect)(service).toBeInstanceOf(ai_service_1.AIService);
+            (0, vitest_1.expect)(() => new ai_service_1.AIService(validConfig)).not.toThrow();
+        });
+        (0, vitest_1.it)('should handle missing optional fields', () => {
+            const minimalOpenAIConfig = {
+                provider: 'openai',
+                apiKey: 'sk-test-key',
+            };
+            const minimalAnthropicConfig = {
+                provider: 'anthropic',
+                apiKey: 'sk-ant-test-key',
+            };
+            (0, vitest_1.expect)(() => new ai_service_1.AIService(minimalOpenAIConfig)).not.toThrow();
+            (0, vitest_1.expect)(() => new ai_service_1.AIService(minimalAnthropicConfig)).not.toThrow();
         });
     });
     (0, vitest_1.describe)('content processing', () => {
@@ -162,6 +263,24 @@ vitest_1.vi.mock('@langchain/core/output_parsers', () => ({
                 title: 'Very Long Document',
             };
             (0, vitest_1.expect)(aiService.translateContent(longContent)).toBeInstanceOf(Promise);
+        });
+        (0, vitest_1.it)('should handle different provider capabilities', () => {
+            const multimodalContent = {
+                text: 'Content with potential image references',
+                contentType: 'text/html',
+                title: 'Multimodal Document',
+            };
+            // Test with providers that support different capabilities
+            const providers = [
+                { provider: 'openai', apiKey: 'sk-test' },
+                { provider: 'anthropic', apiKey: 'sk-ant-test' },
+                { provider: 'vertexai', projectId: 'test', location: 'us-central1' },
+                { provider: 'ollama', baseUrl: 'http://localhost:11434' },
+            ];
+            for (const config of providers) {
+                const service = new ai_service_1.AIService(config);
+                (0, vitest_1.expect)(service.translateContent(multimodalContent)).toBeInstanceOf(Promise);
+            }
         });
     });
 });

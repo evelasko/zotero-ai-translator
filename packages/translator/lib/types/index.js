@@ -3,23 +3,33 @@
  * Type definitions for the Zotero AI Translator package
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.AIValidationError = exports.AIExtractionError = exports.AIClassificationError = exports.ConfigurationError = exports.PdfParseError = exports.UrlFetchError = exports.ContentExtractionError = exports.TranslatorError = void 0;
+exports.AIValidationError = exports.AIExtractionError = exports.AIClassificationError = exports.PdfParseError = exports.UrlFetchError = exports.ContentExtractionError = exports.ConfigurationError = exports.TranslatorError = void 0;
 /**
- * Error types specific to the translator
+ * Base error class for all translator errors
  */
 class TranslatorError extends Error {
     code;
     cause;
-    constructor(message, code, cause) {
+    constructor(message, code = 'TRANSLATOR_ERROR', cause) {
         super(message);
+        this.name = 'TranslatorError';
         this.code = code;
         this.cause = cause;
-        this.name = 'TranslatorError';
     }
 }
 exports.TranslatorError = TranslatorError;
 /**
- * Content extraction errors
+ * Configuration validation error
+ */
+class ConfigurationError extends TranslatorError {
+    constructor(message, cause) {
+        super(message, 'CONFIGURATION_ERROR', cause);
+        this.name = 'ConfigurationError';
+    }
+}
+exports.ConfigurationError = ConfigurationError;
+/**
+ * Content extraction error
  */
 class ContentExtractionError extends TranslatorError {
     constructor(message, cause) {
@@ -29,17 +39,19 @@ class ContentExtractionError extends TranslatorError {
 }
 exports.ContentExtractionError = ContentExtractionError;
 /**
- * URL fetch errors
+ * URL fetch error
  */
 class UrlFetchError extends TranslatorError {
-    constructor(message, cause) {
+    statusCode;
+    constructor(message, statusCode, cause) {
         super(message, 'URL_FETCH_ERROR', cause);
         this.name = 'UrlFetchError';
+        this.statusCode = statusCode;
     }
 }
 exports.UrlFetchError = UrlFetchError;
 /**
- * PDF parsing errors
+ * PDF parsing error
  */
 class PdfParseError extends TranslatorError {
     constructor(message, cause) {
@@ -49,17 +61,7 @@ class PdfParseError extends TranslatorError {
 }
 exports.PdfParseError = PdfParseError;
 /**
- * Configuration validation errors
- */
-class ConfigurationError extends TranslatorError {
-    constructor(message) {
-        super(message, 'CONFIGURATION_ERROR');
-        this.name = 'ConfigurationError';
-    }
-}
-exports.ConfigurationError = ConfigurationError;
-/**
- * AI classification errors
+ * AI classification error
  */
 class AIClassificationError extends TranslatorError {
     constructor(message, cause) {
@@ -69,7 +71,7 @@ class AIClassificationError extends TranslatorError {
 }
 exports.AIClassificationError = AIClassificationError;
 /**
- * AI extraction errors
+ * AI extraction error
  */
 class AIExtractionError extends TranslatorError {
     constructor(message, cause) {
@@ -79,7 +81,7 @@ class AIExtractionError extends TranslatorError {
 }
 exports.AIExtractionError = AIExtractionError;
 /**
- * AI validation errors
+ * AI validation error
  */
 class AIValidationError extends TranslatorError {
     constructor(message, cause) {

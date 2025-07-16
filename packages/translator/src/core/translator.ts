@@ -3,13 +3,13 @@
  */
 
 import { ZoteroItemData, ZoteroItemType } from '@zotero-suite/schema-types';
-import { 
-  TranslationInput, 
-  TranslationResult, 
-  TranslatorConfig, 
-  ExtractedContent,
-  ConfigurationError,
-  TranslatorError 
+import {
+    ConfigurationError,
+    ExtractedContent,
+    TranslationInput,
+    TranslationResult,
+    TranslatorConfig,
+    TranslatorError
 } from '../types';
 import { ContentExtractor } from '../utils/content-extractor';
 import { AIService } from './ai-service';
@@ -74,9 +74,9 @@ export class Translator {
         console.log(`[Translator] Content length: ${extractedContent.text.length} chars`);
       }
 
-      // Step 2: AI Translation Pipeline (placeholder for now)
+      // Step 2: AI Translation Pipeline
       const translationStartTime = Date.now();
-      const item = await this.translateToZoteroItem(extractedContent);
+      const translationResult = await this.translateToZoteroItem(extractedContent);
       const translationTime = Date.now() - translationStartTime;
 
       const totalTime = Date.now() - startTime;
@@ -87,14 +87,16 @@ export class Translator {
       }
 
       return {
-        item,
-        confidence: 0.8, // Placeholder confidence score
+        item: translationResult.item,
+        confidence: translationResult.confidence,
         extractedContent,
         processing: {
           extractionTime,
           translationTime,
           totalTime,
           ingestionMethod: 'url' in input ? 'url' : 'sourceText',
+          aiProvider: translationResult.aiProvider,
+          modelsUsed: translationResult.modelsUsed,
         },
       };
     } catch (error) {
@@ -143,7 +145,15 @@ export class Translator {
    * 2. Extraction: Extract structured metadata using LangChain with dynamic schemas
    * 3. Validation: Validate the result using Zod safeParse
    */
-  private async translateToZoteroItem(content: ExtractedContent): Promise<ZoteroItemData> {
+  private async translateToZoteroItem(content: ExtractedContent): Promise<{
+    item: ZoteroItemData;
+    confidence: number;
+    aiProvider?: string;
+    modelsUsed?: {
+      classification: string;
+      extraction: string;
+    };
+  }> {
     if (this.config.debug) {
       console.log('[Translator] Starting AI translation pipeline');
     }
@@ -155,23 +165,38 @@ export class Translator {
         
         if (this.config.debug) {
           console.log(`[Translator] AI translation completed with confidence: ${result.confidence}`);
+          console.log(`[Translator] Used provider: ${result.provider}`);
+          console.log(`[Translator] Models used:`, result.modelsUsed);
         }
         
-        return result.item;
+        return {
+          item: result.item,
+          confidence: result.confidence,
+          aiProvider: result.provider,
+          modelsUsed: result.modelsUsed,
+        };
       } catch (error) {
         if (this.config.debug) {
           console.warn('[Translator] AI translation failed, falling back to basic extraction:', error);
         }
         
         // Fall back to basic extraction if AI fails
-        return this.basicFallbackExtraction(content);
+        const fallbackItem = this.basicFallbackExtraction(content);
+        return {
+          item: fallbackItem,
+          confidence: 0.3, // Lower confidence for fallback
+        };
       }
     } else {
       if (this.config.debug) {
         console.log('[Translator] No AI configuration provided, using basic extraction');
       }
       
-      return this.basicFallbackExtraction(content);
+      const fallbackItem = this.basicFallbackExtraction(content);
+      return {
+        item: fallbackItem,
+        confidence: 0.3, // Lower confidence for fallback
+      };
     }
   }
 
@@ -261,17 +286,14 @@ export class Translator {
     
     // Validate AI configuration if provided
     if (this.config.ai) {
-      if (!this.config.ai.apiKey || this.config.ai.apiKey.trim().length === 0) {
-        throw new ConfigurationError('AI API key is required when AI configuration is provided');
-      }
-      
-      if (this.config.ai.temperature !== undefined && 
-          (this.config.ai.temperature < 0 || this.config.ai.temperature > 2)) {
-        throw new ConfigurationError('AI temperature must be between 0 and 2');
-      }
-      
-      if (this.config.ai.maxTokens !== undefined && this.config.ai.maxTokens <= 0) {
-        throw new ConfigurationError('AI max tokens must be greater than 0');
+      try {
+        // Import ConfigValidator dynamically to avoid circular dependencies
+        const { ConfigValidator } = require('./config-validator');
+        ConfigValidator.validateProviderConfig(this.config.ai);
+      } catch (error) {
+        throw new ConfigurationError(
+          `AI configuration validation failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+        );
       }
     }
   }

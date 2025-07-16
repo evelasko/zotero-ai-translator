@@ -6,8 +6,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AIService } from '../core/ai-service';
 import {
   AIClassificationError,
-  AIConfig,
   AIExtractionError,
+  AIProviderConfig,
   AIValidationError,
   ExtractedContent,
 } from '../types';
@@ -19,14 +19,22 @@ vi.mock('@langchain/openai', () => ({
   })),
 }));
 
-vi.mock('@langchain/core/prompts', () => ({
-  PromptTemplate: {
-    fromTemplate: vi.fn().mockReturnValue({
-      pipe: vi.fn().mockReturnValue({
-        invoke: vi.fn(),
-      }),
-    }),
-  },
+vi.mock('@langchain/anthropic', () => ({
+  ChatAnthropic: vi.fn().mockImplementation(() => ({
+    // Mock implementation
+  })),
+}));
+
+vi.mock('@langchain/google-vertexai', () => ({
+  ChatVertexAI: vi.fn().mockImplementation(() => ({
+    // Mock implementation
+  })),
+}));
+
+vi.mock('@langchain/ollama', () => ({
+  ChatOllama: vi.fn().mockImplementation(() => ({
+    // Mock implementation
+  })),
 }));
 
 vi.mock('@langchain/core/output_parsers', () => ({
@@ -44,12 +52,13 @@ vi.mock('@langchain/core/output_parsers', () => ({
 
 describe('AIService', () => {
   let aiService: AIService;
-  let mockConfig: AIConfig;
+  let mockConfig: AIProviderConfig;
   let mockContent: ExtractedContent;
 
   beforeEach(() => {
     mockConfig = {
-      apiKey: 'test-api-key',
+      provider: 'openai',
+      apiKey: 'sk-test-api-key',
       classificationModel: 'gpt-3.5-turbo',
       extractionModel: 'gpt-3.5-turbo',
       temperature: 0.1,
@@ -73,25 +82,87 @@ describe('AIService', () => {
   });
 
   describe('constructor', () => {
-    it('should create AI service with default config', () => {
-      const minimalConfig: AIConfig = {
-        apiKey: 'test-key',
+    it('should create AI service with OpenAI config', () => {
+      const openaiConfig: AIProviderConfig = {
+        provider: 'openai',
+        apiKey: 'sk-test-key',
       };
 
-      expect(() => new AIService(minimalConfig)).not.toThrow();
+      expect(() => new AIService(openaiConfig)).not.toThrow();
+    });
+
+    it('should create AI service with Anthropic config', () => {
+      const anthropicConfig: AIProviderConfig = {
+        provider: 'anthropic',
+        apiKey: 'sk-ant-test-key',
+      };
+
+      expect(() => new AIService(anthropicConfig)).not.toThrow();
+    });
+
+    it('should create AI service with VertexAI config', () => {
+      const vertexaiConfig: AIProviderConfig = {
+        provider: 'vertexai',
+        projectId: 'test-project',
+        location: 'us-central1',
+      };
+
+      expect(() => new AIService(vertexaiConfig)).not.toThrow();
+    });
+
+    it('should create AI service with Ollama config', () => {
+      const ollamaConfig: AIProviderConfig = {
+        provider: 'ollama',
+        baseUrl: 'http://localhost:11434',
+      };
+
+      expect(() => new AIService(ollamaConfig)).not.toThrow();
     });
 
     it('should create AI service with full config', () => {
       expect(() => new AIService(mockConfig)).not.toThrow();
     });
 
-    it('should handle custom base URL', () => {
-      const configWithBaseURL: AIConfig = {
-        ...mockConfig,
+    it('should handle OpenAI custom base URL', () => {
+      const configWithBaseURL: AIProviderConfig = {
+        provider: 'openai',
+        apiKey: 'sk-test-api-key',
+        classificationModel: 'gpt-3.5-turbo',
+        extractionModel: 'gpt-3.5-turbo',
+        temperature: 0.1,
+        maxTokens: 2000,
         baseURL: 'https://custom-api.example.com',
       };
 
       expect(() => new AIService(configWithBaseURL)).not.toThrow();
+    });
+
+    it('should handle Anthropic custom headers', () => {
+      const configWithHeaders: AIProviderConfig = {
+        provider: 'anthropic',
+        apiKey: 'sk-ant-test-key',
+        customHeaders: {
+          'Custom-Header': 'test-value',
+        },
+      };
+
+      expect(() => new AIService(configWithHeaders)).not.toThrow();
+    });
+
+    it('should handle VertexAI authentication', () => {
+      const configWithAuth: AIProviderConfig = {
+        provider: 'vertexai',
+        projectId: 'test-project',
+        location: 'us-central1',
+        authOptions: {
+          credentials: {
+            client_email: 'test@example.com',
+            private_key: 'test-key',
+          },
+        },
+      };
+
+      expect(() => new AIService(configWithAuth)).not.toThrow();
     });
   });
 
@@ -106,6 +177,33 @@ describe('AIService', () => {
       // This test would need proper mocking of LangChain responses
       // For now, we'll just verify the method exists and can be called
       expect(aiService.translateContent(mockContent)).toBeInstanceOf(Promise);
+    });
+
+    it('should handle different provider configurations', async () => {
+      const providers: AIProviderConfig[] = [
+        {
+          provider: 'openai',
+          apiKey: 'sk-test-key',
+        },
+        {
+          provider: 'anthropic',
+          apiKey: 'sk-ant-test-key',
+        },
+        {
+          provider: 'vertexai',
+          projectId: 'test-project',
+          location: 'us-central1',
+        },
+        {
+          provider: 'ollama',
+          baseUrl: 'http://localhost:11434',
+        },
+      ];
+
+      for (const config of providers) {
+        const service = new AIService(config);
+        expect(service.translateContent(mockContent)).toBeInstanceOf(Promise);
+      }
     });
   });
 
@@ -133,8 +231,9 @@ describe('AIService', () => {
   });
 
   describe('configuration validation', () => {
-    it('should accept valid configuration', () => {
-      const validConfig: AIConfig = {
+    it('should accept valid OpenAI configuration', () => {
+      const validConfig: AIProviderConfig = {
+        provider: 'openai',
         apiKey: 'sk-test-key',
         classificationModel: 'gpt-4',
         extractionModel: 'gpt-4',
@@ -145,13 +244,32 @@ describe('AIService', () => {
       expect(() => new AIService(validConfig)).not.toThrow();
     });
 
-    it('should handle missing optional fields', () => {
-      const minimalConfig: AIConfig = {
-        apiKey: 'test-key',
+    it('should accept valid Anthropic configuration', () => {
+      const validConfig: AIProviderConfig = {
+        provider: 'anthropic',
+        apiKey: 'sk-ant-test-key',
+        classificationModel: 'claude-3-5-sonnet-20241022',
+        extractionModel: 'claude-3-5-sonnet-20241022',
+        temperature: 0.2,
+        maxTokens: 4000,
       };
 
-      const service = new AIService(minimalConfig);
-      expect(service).toBeInstanceOf(AIService);
+      expect(() => new AIService(validConfig)).not.toThrow();
+    });
+
+    it('should handle missing optional fields', () => {
+      const minimalOpenAIConfig: AIProviderConfig = {
+        provider: 'openai',
+        apiKey: 'sk-test-key',
+      };
+
+      const minimalAnthropicConfig: AIProviderConfig = {
+        provider: 'anthropic',
+        apiKey: 'sk-ant-test-key',
+      };
+
+      expect(() => new AIService(minimalOpenAIConfig)).not.toThrow();
+      expect(() => new AIService(minimalAnthropicConfig)).not.toThrow();
     });
   });
 
@@ -197,6 +315,27 @@ describe('AIService', () => {
       };
 
       expect(aiService.translateContent(longContent)).toBeInstanceOf(Promise);
+    });
+
+    it('should handle different provider capabilities', () => {
+      const multimodalContent: ExtractedContent = {
+        text: 'Content with potential image references',
+        contentType: 'text/html',
+        title: 'Multimodal Document',
+      };
+
+      // Test with providers that support different capabilities
+      const providers = [
+        { provider: 'openai' as const, apiKey: 'sk-test' },
+        { provider: 'anthropic' as const, apiKey: 'sk-ant-test' },
+        { provider: 'vertexai' as const, projectId: 'test', location: 'us-central1' },
+        { provider: 'ollama' as const, baseUrl: 'http://localhost:11434' },
+      ];
+
+      for (const config of providers) {
+        const service = new AIService(config);
+        expect(service.translateContent(multimodalContent)).toBeInstanceOf(Promise);
+      }
     });
   });
 });

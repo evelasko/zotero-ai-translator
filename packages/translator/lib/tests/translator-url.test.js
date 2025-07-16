@@ -45,92 +45,111 @@ const translator_1 = require("../core/translator");
 const types_1 = require("../types");
 // Mock axios
 vitest_1.vi.mock('axios');
-const mockedAxios = axios_1.default;
-// Mock PDF parser
-vitest_1.vi.mock('pdf-parse', () => ({
-    default: vitest_1.vi.fn(),
-}));
-// Mock JSDOM and Readability
-vitest_1.vi.mock('jsdom', () => ({
-    JSDOM: vitest_1.vi.fn().mockImplementation((html) => ({
-        window: {
-            document: {
-                documentElement: {
-                    outerHTML: html,
-                },
-            },
-        },
+const mockedAxiosGet = vitest_1.vi.mocked(axios_1.default.get);
+// Mock LangChain modules for AI testing
+vitest_1.vi.mock('@langchain/openai', () => ({
+    ChatOpenAI: vitest_1.vi.fn().mockImplementation(() => ({
+        invoke: vitest_1.vi.fn().mockResolvedValue({
+            content: JSON.stringify({
+                itemType: 'journalArticle',
+                title: 'AI-Extracted Article Title',
+                creators: [{ firstName: 'AI', lastName: 'Author', creatorType: 'author' }],
+                abstractNote: 'AI-extracted abstract',
+            }),
+        }),
     })),
 }));
+vitest_1.vi.mock('@langchain/anthropic', () => ({
+    ChatAnthropic: vitest_1.vi.fn().mockImplementation(() => ({
+        invoke: vitest_1.vi.fn().mockResolvedValue({
+            content: JSON.stringify({
+                itemType: 'journalArticle',
+                title: 'AI-Extracted Article Title',
+                creators: [{ firstName: 'AI', lastName: 'Author', creatorType: 'author' }],
+                abstractNote: 'AI-extracted abstract',
+            }),
+        }),
+    })),
+}));
+vitest_1.vi.mock('@langchain/google-vertexai', () => ({
+    ChatVertexAI: vitest_1.vi.fn().mockImplementation(() => ({
+        invoke: vitest_1.vi.fn().mockResolvedValue({
+            content: JSON.stringify({
+                itemType: 'journalArticle',
+                title: 'AI-Extracted Article Title',
+                creators: [{ firstName: 'AI', lastName: 'Author', creatorType: 'author' }],
+                abstractNote: 'AI-extracted abstract',
+            }),
+        }),
+    })),
+}));
+vitest_1.vi.mock('@langchain/ollama', () => ({
+    ChatOllama: vitest_1.vi.fn().mockImplementation(() => ({
+        invoke: vitest_1.vi.fn().mockResolvedValue({
+            content: JSON.stringify({
+                itemType: 'journalArticle',
+                title: 'AI-Extracted Article Title',
+                creators: [{ firstName: 'AI', lastName: 'Author', creatorType: 'author' }],
+                abstractNote: 'AI-extracted abstract',
+            }),
+        }),
+    })),
+}));
+// Mock @mozilla/readability
 vitest_1.vi.mock('@mozilla/readability', () => ({
     Readability: vitest_1.vi.fn().mockImplementation(() => ({
         parse: vitest_1.vi.fn().mockReturnValue({
             title: 'Test Article Title',
-            textContent: 'This is the main content of the article extracted by Readability.',
+            content: '<p>This is extracted content from Readability.</p>',
+            textContent: 'This is extracted content from Readability.',
             excerpt: 'This is an excerpt from the article.',
-            author: 'John Doe',
-            publishedTime: '2023-01-01T00:00:00Z',
-            language: 'en',
+            byline: 'By Test Author',
+            dir: 'ltr',
+            lang: 'en',
         }),
     })),
 }));
-// Mock LangChain modules
-vitest_1.vi.mock('@langchain/openai', () => ({
-    ChatOpenAI: vitest_1.vi.fn().mockImplementation(() => ({
-        invoke: vitest_1.vi.fn().mockResolvedValue({
-            content: 'journalArticle',
-        }),
-    })),
+// Mock pdf-parse
+vitest_1.vi.mock('pdf-parse', () => ({
+    default: vitest_1.vi.fn(),
 }));
-vitest_1.vi.mock('@langchain/core/prompts', () => ({
-    PromptTemplate: {
-        fromTemplate: vitest_1.vi.fn().mockReturnValue({
-            pipe: vitest_1.vi.fn().mockReturnValue({
-                invoke: vitest_1.vi.fn().mockResolvedValue({
-                    content: 'journalArticle',
+// Mock JSDOM
+vitest_1.vi.mock('jsdom', () => ({
+    JSDOM: vitest_1.vi.fn().mockImplementation(_html => ({
+        window: {
+            document: {
+                title: 'Test Page Title',
+                querySelector: vitest_1.vi.fn(selector => {
+                    if (selector === 'meta[name="author"]') {
+                        return { getAttribute: () => 'John Doe' };
+                    }
+                    if (selector === 'meta[name="description"]') {
+                        return { getAttribute: () => 'Test article description' };
+                    }
+                    return null;
                 }),
-            }),
-        }),
-    },
+                querySelectorAll: vitest_1.vi.fn(() => []),
+            },
+        },
+    })),
 }));
+// Mock LangChain output parsers
 vitest_1.vi.mock('@langchain/core/output_parsers', () => ({
     StructuredOutputParser: {
         fromZodSchema: vitest_1.vi.fn().mockReturnValue({
             getFormatInstructions: vitest_1.vi.fn().mockReturnValue('Format instructions'),
-            parse: vitest_1.vi.fn().mockResolvedValue({
-                itemType: 'journalArticle',
-                title: 'AI-Extracted Article Title',
-                creators: [{ creatorType: 'author', firstName: 'John', lastName: 'Doe' }],
-                abstractNote: 'AI-extracted abstract',
-                date: '2023-01-01',
-                language: 'en',
-                url: 'https://example.com/article',
-                tags: [],
-                collections: [],
-                relations: {},
-            }),
         }),
     },
     OutputFixingParser: {
         fromLLM: vitest_1.vi.fn().mockReturnValue({
-            parse: vitest_1.vi.fn().mockResolvedValue({
-                itemType: 'journalArticle',
-                title: 'Fixed Article Title',
-                creators: [{ creatorType: 'author', firstName: 'John', lastName: 'Doe' }],
-                abstractNote: 'Fixed abstract',
-                date: '2023-01-01',
-                language: 'en',
-                url: 'https://example.com/article',
-                tags: [],
-                collections: [],
-                relations: {},
-            }),
+        // Mock parser
         }),
     },
 }));
 (0, vitest_1.describe)('Translator - URL Input Path', () => {
     let translator;
-    let translatorWithAI;
+    let translatorWithOpenAI;
+    let translatorWithAnthropic;
     (0, vitest_1.beforeAll)(() => {
         // Mock console methods to avoid noise during tests
         vitest_1.vi.spyOn(console, 'log').mockImplementation(() => { });
@@ -143,12 +162,28 @@ vitest_1.vi.mock('@langchain/core/output_parsers', () => ({
             maxRetries: 1,
             debug: false,
         });
-        translatorWithAI = new translator_1.Translator({
+        translatorWithOpenAI = new translator_1.Translator({
             timeout: 5000,
             maxRetries: 1,
             debug: false,
             ai: {
-                apiKey: 'test-api-key',
+                provider: 'openai',
+                apiKey: 'sk-test-api-key',
+                classificationModel: 'gpt-3.5-turbo',
+                extractionModel: 'gpt-3.5-turbo',
+                temperature: 0.1,
+                maxTokens: 2000,
+            },
+        });
+        translatorWithAnthropic = new translator_1.Translator({
+            timeout: 5000,
+            maxRetries: 1,
+            debug: false,
+            ai: {
+                provider: 'anthropic',
+                apiKey: 'sk-ant-test-api-key',
+                classificationModel: 'claude-3-haiku-20240307',
+                extractionModel: 'claude-3-5-sonnet-20241022',
                 temperature: 0.1,
                 maxTokens: 2000,
             },
@@ -178,13 +213,13 @@ vitest_1.vi.mock('@langchain/core/output_parsers', () => ({
         </body>
         </html>
       `;
-            mockedAxios.get.mockResolvedValue({
+            mockedAxiosGet.mockResolvedValue({
                 data: mockHtmlContent,
                 headers: { 'content-type': 'text/html' },
                 status: 200,
             });
             const result = await translator.translate({ url: 'https://example.com/article' });
-            (0, vitest_1.expect)(mockedAxios.get).toHaveBeenCalledWith('https://example.com/article', {
+            (0, vitest_1.expect)(mockedAxiosGet).toHaveBeenCalledWith('https://example.com/article', {
                 timeout: 5000,
                 maxRedirects: 5,
                 headers: {
@@ -201,7 +236,7 @@ vitest_1.vi.mock('@langchain/core/output_parsers', () => ({
             (0, vitest_1.expect)(result.processing.ingestionMethod).toBe('url');
             (0, vitest_1.expect)(result.extractedContent.contentType).toBe('text/html');
         });
-        (0, vitest_1.it)('should successfully fetch and translate HTML content with AI', async () => {
+        (0, vitest_1.it)('should successfully fetch and translate HTML content with OpenAI', async () => {
             const mockHtmlContent = `
         <!DOCTYPE html>
         <html>
@@ -217,16 +252,47 @@ vitest_1.vi.mock('@langchain/core/output_parsers', () => ({
         </body>
         </html>
       `;
-            mockedAxios.get.mockResolvedValue({
+            mockedAxiosGet.mockResolvedValue({
                 data: mockHtmlContent,
                 headers: { 'content-type': 'text/html' },
                 status: 200,
             });
-            const result = await translatorWithAI.translate({ url: 'https://example.com/research' });
+            const result = await translatorWithOpenAI.translate({ url: 'https://example.com/research' });
             (0, vitest_1.expect)(result).toHaveProperty('item');
             (0, vitest_1.expect)(result.item.itemType).toBe('journalArticle'); // Should be classified by AI
             (0, vitest_1.expect)(result.item.title).toBe('AI-Extracted Article Title');
             (0, vitest_1.expect)(result.processing.ingestionMethod).toBe('url');
+            (0, vitest_1.expect)(result.processing.aiProvider).toBe('openai');
+        });
+        (0, vitest_1.it)('should successfully fetch and translate HTML content with Anthropic', async () => {
+            const mockHtmlContent = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>Research Paper</title>
+          <meta name="author" content="Dr. Jane Smith">
+        </head>
+        <body>
+          <article>
+            <h1>Advanced Machine Learning Techniques</h1>
+            <p>This paper explores cutting-edge machine learning algorithms.</p>
+          </article>
+        </body>
+        </html>
+      `;
+            mockedAxiosGet.mockResolvedValue({
+                data: mockHtmlContent,
+                headers: { 'content-type': 'text/html' },
+                status: 200,
+            });
+            const result = await translatorWithAnthropic.translate({
+                url: 'https://example.com/research',
+            });
+            (0, vitest_1.expect)(result).toHaveProperty('item');
+            (0, vitest_1.expect)(result.item.itemType).toBe('journalArticle'); // Should be classified by AI
+            (0, vitest_1.expect)(result.item.title).toBe('AI-Extracted Article Title');
+            (0, vitest_1.expect)(result.processing.ingestionMethod).toBe('url');
+            (0, vitest_1.expect)(result.processing.aiProvider).toBe('anthropic');
         });
         (0, vitest_1.it)('should handle HTML with missing title gracefully', async () => {
             const mockHtmlContent = `
@@ -237,7 +303,7 @@ vitest_1.vi.mock('@langchain/core/output_parsers', () => ({
         </body>
         </html>
       `;
-            mockedAxios.get.mockResolvedValue({
+            mockedAxiosGet.mockResolvedValue({
                 data: mockHtmlContent,
                 headers: { 'content-type': 'text/html' },
                 status: 200,
@@ -265,7 +331,7 @@ vitest_1.vi.mock('@langchain/core/output_parsers', () => ({
         </body>
         </html>
       `;
-            mockedAxios.get.mockResolvedValue({
+            mockedAxiosGet.mockResolvedValue({
                 data: mockHtmlContent,
                 headers: { 'content-type': 'text/html' },
                 status: 200,
@@ -280,7 +346,7 @@ vitest_1.vi.mock('@langchain/core/output_parsers', () => ({
         (0, vitest_1.it)('should successfully fetch and translate PDF content', async () => {
             const mockPdfBuffer = Buffer.from('PDF content');
             const mockPdfParse = await Promise.resolve().then(() => __importStar(require('pdf-parse')));
-            mockedAxios.get.mockResolvedValue({
+            mockedAxiosGet.mockResolvedValue({
                 data: mockPdfBuffer,
                 headers: { 'content-type': 'application/pdf' },
                 status: 200,
@@ -301,7 +367,7 @@ vitest_1.vi.mock('@langchain/core/output_parsers', () => ({
                 },
             });
             const result = await translator.translate({ url: 'https://example.com/paper.pdf' });
-            (0, vitest_1.expect)(mockedAxios.get).toHaveBeenCalledWith('https://example.com/paper.pdf', {
+            (0, vitest_1.expect)(mockedAxiosGet).toHaveBeenCalledWith('https://example.com/paper.pdf', {
                 timeout: 5000,
                 maxRedirects: 5,
                 headers: {
@@ -317,7 +383,7 @@ vitest_1.vi.mock('@langchain/core/output_parsers', () => ({
         (0, vitest_1.it)('should handle PDF parsing errors gracefully', async () => {
             const mockPdfBuffer = Buffer.from('Invalid PDF content');
             const mockPdfParse = await Promise.resolve().then(() => __importStar(require('pdf-parse')));
-            mockedAxios.get.mockResolvedValue({
+            mockedAxiosGet.mockResolvedValue({
                 data: mockPdfBuffer,
                 headers: { 'content-type': 'application/pdf' },
                 status: 200,
@@ -328,14 +394,14 @@ vitest_1.vi.mock('@langchain/core/output_parsers', () => ({
     });
     (0, vitest_1.describe)('Network Error Handling', () => {
         (0, vitest_1.it)('should handle network timeouts', async () => {
-            mockedAxios.get.mockRejectedValue({
+            mockedAxiosGet.mockRejectedValue({
                 code: 'ECONNABORTED',
                 message: 'timeout of 5000ms exceeded',
             });
             await (0, vitest_1.expect)(translator.translate({ url: 'https://slow-server.com/article' })).rejects.toThrow(types_1.UrlFetchError);
         });
         (0, vitest_1.it)('should handle HTTP error responses', async () => {
-            mockedAxios.get.mockRejectedValue({
+            mockedAxiosGet.mockRejectedValue({
                 response: {
                     status: 404,
                     statusText: 'Not Found',
@@ -345,14 +411,14 @@ vitest_1.vi.mock('@langchain/core/output_parsers', () => ({
             await (0, vitest_1.expect)(translator.translate({ url: 'https://example.com/notfound' })).rejects.toThrow(types_1.UrlFetchError);
         });
         (0, vitest_1.it)('should handle DNS resolution errors', async () => {
-            mockedAxios.get.mockRejectedValue({
+            mockedAxiosGet.mockRejectedValue({
                 code: 'ENOTFOUND',
                 message: 'getaddrinfo ENOTFOUND invalid-domain.com',
             });
             await (0, vitest_1.expect)(translator.translate({ url: 'https://invalid-domain.com/article' })).rejects.toThrow(types_1.UrlFetchError);
         });
         (0, vitest_1.it)('should handle connection refused errors', async () => {
-            mockedAxios.get.mockRejectedValue({
+            mockedAxiosGet.mockRejectedValue({
                 code: 'ECONNREFUSED',
                 message: 'connect ECONNREFUSED 127.0.0.1:80',
             });
@@ -362,7 +428,7 @@ vitest_1.vi.mock('@langchain/core/output_parsers', () => ({
     (0, vitest_1.describe)('Content Type Detection', () => {
         (0, vitest_1.it)('should handle plain text content', async () => {
             const mockTextContent = 'This is plain text content from a .txt file or plain text response.';
-            mockedAxios.get.mockResolvedValue({
+            mockedAxiosGet.mockResolvedValue({
                 data: mockTextContent,
                 headers: { 'content-type': 'text/plain' },
                 status: 200,
@@ -373,7 +439,7 @@ vitest_1.vi.mock('@langchain/core/output_parsers', () => ({
             (0, vitest_1.expect)(result.item.itemType).toBe('document');
         });
         (0, vitest_1.it)('should handle unsupported content types', async () => {
-            mockedAxios.get.mockResolvedValue({
+            mockedAxiosGet.mockResolvedValue({
                 data: 'Binary content',
                 headers: { 'content-type': 'application/octet-stream' },
                 status: 200,
@@ -382,7 +448,7 @@ vitest_1.vi.mock('@langchain/core/output_parsers', () => ({
         });
         (0, vitest_1.it)('should handle missing content-type header', async () => {
             const mockHtmlContent = '<html><body><p>Content without content-type header</p></body></html>';
-            mockedAxios.get.mockResolvedValue({
+            mockedAxiosGet.mockResolvedValue({
                 data: mockHtmlContent,
                 headers: {},
                 status: 200,
@@ -400,7 +466,7 @@ vitest_1.vi.mock('@langchain/core/output_parsers', () => ({
                 debug: false,
             });
             // First two calls fail, third succeeds
-            mockedAxios.get
+            mockedAxiosGet
                 .mockRejectedValueOnce(new Error('Network error'))
                 .mockRejectedValueOnce(new Error('Network error'))
                 .mockResolvedValue({
@@ -409,7 +475,7 @@ vitest_1.vi.mock('@langchain/core/output_parsers', () => ({
                 status: 200,
             });
             const result = await retryTranslator.translate({ url: 'https://flaky-server.com/article' });
-            (0, vitest_1.expect)(mockedAxios.get).toHaveBeenCalledTimes(3);
+            (0, vitest_1.expect)(mockedAxiosGet).toHaveBeenCalledTimes(3);
             (0, vitest_1.expect)(result.item.itemType).toBe('webpage');
         });
         (0, vitest_1.it)('should fail after exceeding maxRetries', async () => {
@@ -418,11 +484,11 @@ vitest_1.vi.mock('@langchain/core/output_parsers', () => ({
                 maxRetries: 1,
                 debug: false,
             });
-            mockedAxios.get
+            mockedAxiosGet
                 .mockRejectedValueOnce(new Error('Network error'))
                 .mockRejectedValueOnce(new Error('Network error'));
             await (0, vitest_1.expect)(retryTranslator.translate({ url: 'https://always-failing.com/article' })).rejects.toThrow(types_1.UrlFetchError);
-            (0, vitest_1.expect)(mockedAxios.get).toHaveBeenCalledTimes(2); // Initial + 1 retry
+            (0, vitest_1.expect)(mockedAxiosGet).toHaveBeenCalledTimes(2); // Initial + 1 retry
         });
     });
     (0, vitest_1.describe)('Content Length Limits', () => {
@@ -432,7 +498,7 @@ vitest_1.vi.mock('@langchain/core/output_parsers', () => ({
                 debug: false,
             });
             const longContent = 'A'.repeat(200);
-            mockedAxios.get.mockResolvedValue({
+            mockedAxiosGet.mockResolvedValue({
                 data: `<html><body><p>${longContent}</p></body></html>`,
                 headers: { 'content-type': 'text/html' },
                 status: 200,
@@ -449,7 +515,7 @@ vitest_1.vi.mock('@langchain/core/output_parsers', () => ({
             await (0, vitest_1.expect)(translator.translate({ url: 'invalid-url' })).rejects.toThrow('Invalid URL format');
         });
         (0, vitest_1.it)('should accept valid URLs', async () => {
-            mockedAxios.get.mockResolvedValue({
+            mockedAxiosGet.mockResolvedValue({
                 data: '<html><body><p>Valid URL content</p></body></html>',
                 headers: { 'content-type': 'text/html' },
                 status: 200,

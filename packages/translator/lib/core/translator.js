@@ -57,9 +57,9 @@ class Translator {
                 console.log(`[Translator] Content extracted in ${extractionTime}ms`);
                 console.log(`[Translator] Content length: ${extractedContent.text.length} chars`);
             }
-            // Step 2: AI Translation Pipeline (placeholder for now)
+            // Step 2: AI Translation Pipeline
             const translationStartTime = Date.now();
-            const item = await this.translateToZoteroItem(extractedContent);
+            const translationResult = await this.translateToZoteroItem(extractedContent);
             const translationTime = Date.now() - translationStartTime;
             const totalTime = Date.now() - startTime;
             if (this.config.debug) {
@@ -67,14 +67,16 @@ class Translator {
                 console.log(`[Translator] Total processing time: ${totalTime}ms`);
             }
             return {
-                item,
-                confidence: 0.8, // Placeholder confidence score
+                item: translationResult.item,
+                confidence: translationResult.confidence,
                 extractedContent,
                 processing: {
                     extractionTime,
                     translationTime,
                     totalTime,
                     ingestionMethod: 'url' in input ? 'url' : 'sourceText',
+                    aiProvider: translationResult.aiProvider,
+                    modelsUsed: translationResult.modelsUsed,
                 },
             };
         }
@@ -128,22 +130,37 @@ class Translator {
                 const result = await this.aiService.translateContent(content);
                 if (this.config.debug) {
                     console.log(`[Translator] AI translation completed with confidence: ${result.confidence}`);
+                    console.log(`[Translator] Used provider: ${result.provider}`);
+                    console.log(`[Translator] Models used:`, result.modelsUsed);
                 }
-                return result.item;
+                return {
+                    item: result.item,
+                    confidence: result.confidence,
+                    aiProvider: result.provider,
+                    modelsUsed: result.modelsUsed,
+                };
             }
             catch (error) {
                 if (this.config.debug) {
                     console.warn('[Translator] AI translation failed, falling back to basic extraction:', error);
                 }
                 // Fall back to basic extraction if AI fails
-                return this.basicFallbackExtraction(content);
+                const fallbackItem = this.basicFallbackExtraction(content);
+                return {
+                    item: fallbackItem,
+                    confidence: 0.3, // Lower confidence for fallback
+                };
             }
         }
         else {
             if (this.config.debug) {
                 console.log('[Translator] No AI configuration provided, using basic extraction');
             }
-            return this.basicFallbackExtraction(content);
+            const fallbackItem = this.basicFallbackExtraction(content);
+            return {
+                item: fallbackItem,
+                confidence: 0.3, // Lower confidence for fallback
+            };
         }
     }
     /**
@@ -218,15 +235,13 @@ class Translator {
         }
         // Validate AI configuration if provided
         if (this.config.ai) {
-            if (!this.config.ai.apiKey || this.config.ai.apiKey.trim().length === 0) {
-                throw new types_1.ConfigurationError('AI API key is required when AI configuration is provided');
+            try {
+                // Import ConfigValidator dynamically to avoid circular dependencies
+                const { ConfigValidator } = require('./config-validator');
+                ConfigValidator.validateProviderConfig(this.config.ai);
             }
-            if (this.config.ai.temperature !== undefined &&
-                (this.config.ai.temperature < 0 || this.config.ai.temperature > 2)) {
-                throw new types_1.ConfigurationError('AI temperature must be between 0 and 2');
-            }
-            if (this.config.ai.maxTokens !== undefined && this.config.ai.maxTokens <= 0) {
-                throw new types_1.ConfigurationError('AI max tokens must be greater than 0');
+            catch (error) {
+                throw new types_1.ConfigurationError(`AI configuration validation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
             }
         }
     }

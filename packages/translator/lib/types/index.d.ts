@@ -2,6 +2,7 @@
  * Type definitions for the Zotero AI Translator package
  */
 import { ZoteroItemData } from '@zotero-suite/schema-types';
+import { AIProviderConfig } from './providers';
 /**
  * Input configuration for URL-based translation
  */
@@ -50,53 +51,9 @@ export interface TranslatorConfig {
      */
     debug?: boolean;
     /**
-     * AI configuration options
+     * AI provider configuration
      */
-    ai?: AIConfig;
-}
-/**
- * AI configuration for LangChain integration
- */
-export interface AIConfig {
-    /**
-     * OpenAI API key
-     */
-    apiKey: string;
-    /**
-     * OpenAI model to use for classification
-     * @default 'gpt-3.5-turbo'
-     */
-    classificationModel?: string;
-    /**
-     * OpenAI model to use for extraction
-     * @default 'gpt-3.5-turbo'
-     */
-    extractionModel?: string;
-    /**
-     * Temperature for AI responses
-     * @default 0.1
-     */
-    temperature?: number;
-    /**
-     * Maximum tokens for AI responses
-     * @default 2000
-     */
-    maxTokens?: number;
-    /**
-     * Custom base URL for OpenAI API
-     */
-    baseURL?: string;
-}
-/**
- * Required AI configuration with all optional fields resolved
- */
-export interface RequiredAIConfig {
-    apiKey: string;
-    classificationModel: string;
-    extractionModel: string;
-    temperature: number;
-    maxTokens: number;
-    baseURL?: string;
+    ai?: AIProviderConfig;
 }
 /**
  * Extracted content from URL or source text
@@ -165,55 +122,68 @@ export interface TranslationResult {
          * Content ingestion method used
          */
         ingestionMethod: 'url' | 'sourceText';
+        /**
+         * AI provider used for translation
+         */
+        aiProvider?: string;
+        /**
+         * Models used for classification and extraction
+         */
+        modelsUsed?: {
+            classification: string;
+            extraction: string;
+        };
     };
 }
 /**
- * Error types specific to the translator
+ * Base error class for all translator errors
  */
 export declare class TranslatorError extends Error {
     readonly code: string;
-    readonly cause?: Error | undefined;
-    constructor(message: string, code: string, cause?: Error | undefined);
+    readonly cause?: Error;
+    constructor(message: string, code?: string, cause?: Error);
 }
 /**
- * Content extraction errors
+ * Configuration validation error
+ */
+export declare class ConfigurationError extends TranslatorError {
+    constructor(message: string, cause?: Error);
+}
+/**
+ * Content extraction error
  */
 export declare class ContentExtractionError extends TranslatorError {
     constructor(message: string, cause?: Error);
 }
 /**
- * URL fetch errors
+ * URL fetch error
  */
 export declare class UrlFetchError extends TranslatorError {
-    constructor(message: string, cause?: Error);
+    readonly statusCode?: number;
+    constructor(message: string, statusCode?: number, cause?: Error);
 }
 /**
- * PDF parsing errors
+ * PDF parsing error
  */
 export declare class PdfParseError extends TranslatorError {
     constructor(message: string, cause?: Error);
 }
 /**
- * Configuration validation errors
- */
-export declare class ConfigurationError extends TranslatorError {
-    constructor(message: string);
-}
-/**
- * AI classification errors
+ * AI classification error
  */
 export declare class AIClassificationError extends TranslatorError {
     constructor(message: string, cause?: Error);
 }
 /**
- * AI extraction errors
+ * AI extraction error
  */
 export declare class AIExtractionError extends TranslatorError {
     constructor(message: string, cause?: Error);
 }
 /**
- * AI validation errors
+ * AI validation error
  */
 export declare class AIValidationError extends TranslatorError {
     constructor(message: string, cause?: Error);
 }
+export type { AIProviderConfig, AnthropicConfig, AnthropicModel, LLMProvider, ModelCapabilities, OllamaConfig, OllamaModel, OpenAIConfig, OpenAIModel, ProviderFactory, ProviderName, VertexAIConfig, VertexAIModel } from './providers';

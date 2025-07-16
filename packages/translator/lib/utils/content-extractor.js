@@ -12,6 +12,7 @@ const axios_1 = __importDefault(require("axios"));
 const jsdom_1 = require("jsdom");
 const pdf_parse_1 = __importDefault(require("pdf-parse"));
 const types_1 = require("../types");
+/// <reference lib="dom" />
 /**
  * Content extractor class for handling URL and PDF content extraction
  */
@@ -49,7 +50,7 @@ class ContentExtractor {
             }
         }
         catch (error) {
-            throw new types_1.UrlFetchError(`Failed to fetch content from URL: ${url}`, error instanceof Error ? error : new Error(String(error)));
+            throw new types_1.UrlFetchError(`Failed to fetch content from URL: ${url}`, 500, error instanceof Error ? error : new Error(String(error)));
         }
     }
     /**
@@ -78,6 +79,7 @@ class ContentExtractor {
     /**
      * Fetch URL with retry logic
      */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async fetchWithRetry(url, attempt = 1) {
         const config = {
             timeout: this.config.timeout,
@@ -236,6 +238,7 @@ class ContentExtractor {
     /**
      * Extract title from HTML document
      */
+    // eslint-disable-next-line no-undef
     extractTitleFromHtml(document) {
         // Try title tag first
         const titleElement = document.querySelector('title');
