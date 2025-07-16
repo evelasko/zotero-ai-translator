@@ -11,36 +11,126 @@ import {
   AIValidationError,
   ExtractedContent,
 } from '../types';
+import { registerAllProviders } from '../core/providers';
+import { ProviderDetector } from '../core/provider-factory';
 
 // Mock LangChain modules
 vi.mock('@langchain/openai', () => ({
-  ChatOpenAI: vi.fn().mockImplementation(() => ({
-    // Mock implementation
-  })),
+  ChatOpenAI: vi.fn().mockImplementation(() => {
+    let callCount = 0;
+    return {
+      invoke: vi.fn().mockImplementation(async () => {
+        callCount++;
+        if (callCount % 2 === 1) {
+          // Odd calls: classification
+          return { content: 'webpage' };
+        } else {
+          // Even calls: extraction
+          return {
+            content: JSON.stringify({
+              itemType: 'webpage',
+              title: 'Test Article',
+              creators: [{ firstName: 'Test', lastName: 'Author', creatorType: 'author' }],
+              abstractNote: 'Test abstract',
+              date: '2024-01-01',
+              url: 'https://example.com/article',
+            }),
+          };
+        }
+      }),
+    };
+  }),
 }));
 
 vi.mock('@langchain/anthropic', () => ({
-  ChatAnthropic: vi.fn().mockImplementation(() => ({
-    // Mock implementation
-  })),
+  ChatAnthropic: vi.fn().mockImplementation(() => {
+    let callCount = 0;
+    return {
+      invoke: vi.fn().mockImplementation(async () => {
+        callCount++;
+        if (callCount % 2 === 1) {
+          return { content: 'webpage' };
+        } else {
+          return {
+            content: JSON.stringify({
+              itemType: 'webpage',
+              title: 'Test Article',
+              creators: [{ firstName: 'Test', lastName: 'Author', creatorType: 'author' }],
+              abstractNote: 'Test abstract',
+              date: '2024-01-01',
+              url: 'https://example.com/article',
+            }),
+          };
+        }
+      }),
+    };
+  }),
 }));
 
 vi.mock('@langchain/google-vertexai', () => ({
-  ChatVertexAI: vi.fn().mockImplementation(() => ({
-    // Mock implementation
-  })),
+  ChatVertexAI: vi.fn().mockImplementation(() => {
+    let callCount = 0;
+    return {
+      invoke: vi.fn().mockImplementation(async () => {
+        callCount++;
+        if (callCount % 2 === 1) {
+          return { content: 'webpage' };
+        } else {
+          return {
+            content: JSON.stringify({
+              itemType: 'webpage',
+              title: 'Test Article',
+              creators: [{ firstName: 'Test', lastName: 'Author', creatorType: 'author' }],
+              abstractNote: 'Test abstract',
+              date: '2024-01-01',
+              url: 'https://example.com/article',
+            }),
+          };
+        }
+      }),
+    };
+  }),
 }));
 
 vi.mock('@langchain/ollama', () => ({
-  ChatOllama: vi.fn().mockImplementation(() => ({
-    // Mock implementation
-  })),
+  ChatOllama: vi.fn().mockImplementation(() => {
+    let callCount = 0;
+    return {
+      invoke: vi.fn().mockImplementation(async () => {
+        callCount++;
+        if (callCount % 2 === 1) {
+          return { content: 'webpage' };
+        } else {
+          return {
+            content: JSON.stringify({
+              itemType: 'webpage',
+              title: 'Test Article',
+              creators: [{ firstName: 'Test', lastName: 'Author', creatorType: 'author' }],
+              abstractNote: 'Test abstract',
+              date: '2024-01-01',
+              url: 'https://example.com/article',
+            }),
+          };
+        }
+      }),
+    };
+  }),
 }));
 
 vi.mock('@langchain/core/output_parsers', () => ({
   StructuredOutputParser: {
     fromZodSchema: vi.fn().mockReturnValue({
       getFormatInstructions: vi.fn().mockReturnValue('Format instructions'),
+      parse: vi.fn().mockResolvedValue({
+        itemType: 'webpage',
+        title: 'Test Title',
+        creators: [],
+        tags: [],
+        collections: [],
+        relations: {},
+        dateAdded: new Date().toISOString(),
+        dateModified: new Date().toISOString(),
+      }),
     }),
   },
   OutputFixingParser: {
@@ -56,6 +146,12 @@ describe('AIService', () => {
   let mockContent: ExtractedContent;
 
   beforeEach(() => {
+    // Mock ProviderDetector to always return true for availability
+    vi.spyOn(ProviderDetector, 'isProviderInstalled').mockReturnValue(true);
+    
+    // Register providers before each test
+    registerAllProviders();
+    
     mockConfig = {
       provider: 'openai',
       apiKey: 'sk-test-api-key',
@@ -77,8 +173,13 @@ describe('AIService', () => {
         language: 'en',
       },
     };
-
-    aiService = new AIService(mockConfig);
+    
+    // Create default aiService instance for tests that don't override it
+    try {
+      aiService = new AIService(mockConfig);
+    } catch (error) {
+      // Some tests may not have the right provider registered
+    }
   });
 
   describe('constructor', () => {
@@ -88,7 +189,8 @@ describe('AIService', () => {
         apiKey: 'sk-test-key',
       };
 
-      expect(() => new AIService(openaiConfig)).not.toThrow();
+      const aiService = new AIService(openaiConfig);
+      expect(aiService).toBeDefined();
     });
 
     it('should create AI service with Anthropic config', () => {

@@ -6,6 +6,32 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const vitest_1 = require("vitest");
 const translator_1 = require("../core/translator");
 const types_1 = require("../types");
+const providers_1 = require("../core/providers");
+// Mock ContentExtractor to avoid network calls
+vitest_1.vi.mock('../utils/content-extractor', () => ({
+    ContentExtractor: vitest_1.vi.fn().mockImplementation(() => ({
+        extractFromUrl: vitest_1.vi.fn().mockResolvedValue({
+            text: 'Test content for URL extraction',
+            title: 'Test Article',
+            url: 'https://example.com/article',
+            contentType: 'text/html',
+            metadata: {
+                author: 'Test Author',
+                publishedDate: '2024-01-01',
+                excerpt: 'Test excerpt',
+                language: 'en',
+            },
+        }),
+        extractFromSourceText: vitest_1.vi.fn().mockResolvedValue({
+            text: 'Test content for source text extraction',
+            title: 'Test Article',
+            contentType: 'text/plain',
+            metadata: {
+                language: 'en',
+            },
+        }),
+    })),
+}));
 // Mock LangChain modules to avoid requiring actual API keys in tests
 vitest_1.vi.mock('@langchain/openai', () => ({
     ChatOpenAI: vitest_1.vi.fn().mockImplementation(() => ({
@@ -42,6 +68,8 @@ vitest_1.vi.mock('@langchain/core/output_parsers', () => ({
 (0, vitest_1.describe)('Translator', () => {
     let translator;
     (0, vitest_1.beforeEach)(() => {
+        // Register providers before each test
+        (0, providers_1.registerAllProviders)();
         translator = new translator_1.Translator({
             debug: false,
             timeout: 5000,

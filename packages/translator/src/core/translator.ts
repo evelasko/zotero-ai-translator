@@ -13,6 +13,7 @@ import {
 } from '../types';
 import { ContentExtractor } from '../utils/content-extractor';
 import { AIService } from './ai-service';
+import { ConfigValidator } from './config-validator';
 
 /**
  * Main Translator class that orchestrates content ingestion and AI-powered translation
@@ -287,8 +288,6 @@ export class Translator {
     // Validate AI configuration if provided
     if (this.config.ai) {
       try {
-        // Import ConfigValidator dynamically to avoid circular dependencies
-        const { ConfigValidator } = require('./config-validator');
         ConfigValidator.validateProviderConfig(this.config.ai);
       } catch (error) {
         throw new ConfigurationError(

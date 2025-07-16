@@ -39,6 +39,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const vitest_1 = require("vitest");
 const config_validator_1 = require("../core/config-validator");
 const types_1 = require("../types");
+const provider_factory_1 = require("../core/provider-factory");
 // Mock the actual provider implementations
 vitest_1.vi.mock('../core/providers/openai-provider', () => ({
     OpenAIProvider: {
@@ -105,27 +106,122 @@ vitest_1.vi.mock('../core/config-validator', () => ({
 (0, vitest_1.describe)('ProviderFactory', () => {
     (0, vitest_1.beforeEach)(() => {
         vitest_1.vi.clearAllMocks();
+        // Reset the provider factory and manually register mocked providers
+        provider_factory_1.ProviderFactory.reset();
+        // Register mock providers
+        provider_factory_1.ProviderFactory.registerProvider('openai', {
+            name: 'openai',
+            isAvailable: () => true,
+            createClassificationModel: vitest_1.vi.fn(),
+            createExtractionModel: vitest_1.vi.fn(),
+            validateConfig: (config) => {
+                // Call the actual validator in the mock
+                config_validator_1.ConfigValidator.validateProviderConfig(config);
+            },
+            getModelCapabilities: () => ({
+                maxTokens: 128000,
+                supportsToolCalling: true,
+                supportsStructuredOutput: true,
+                supportsJsonMode: true,
+                supportsImageInput: true,
+                supportsAudioInput: false,
+                supportsVideoInput: false,
+                supportsStreaming: true,
+                supportsBatchProcessing: false,
+                supportsTokenUsage: true,
+                maxContextLength: 128000,
+                maxOutputTokens: 4096,
+            }),
+        });
+        provider_factory_1.ProviderFactory.registerProvider('anthropic', {
+            name: 'anthropic',
+            isAvailable: () => true,
+            createClassificationModel: vitest_1.vi.fn(),
+            createExtractionModel: vitest_1.vi.fn(),
+            validateConfig: (config) => {
+                // Call the actual validator in the mock
+                config_validator_1.ConfigValidator.validateProviderConfig(config);
+            },
+            getModelCapabilities: () => ({
+                maxTokens: 200000,
+                supportsToolCalling: true,
+                supportsStructuredOutput: true,
+                supportsJsonMode: true,
+                supportsImageInput: true,
+                supportsAudioInput: false,
+                supportsVideoInput: false,
+                supportsStreaming: true,
+                supportsBatchProcessing: false,
+                supportsTokenUsage: true,
+                maxContextLength: 200000,
+                maxOutputTokens: 8192,
+            }),
+        });
+        provider_factory_1.ProviderFactory.registerProvider('vertexai', {
+            name: 'vertexai',
+            isAvailable: () => true,
+            createClassificationModel: vitest_1.vi.fn(),
+            createExtractionModel: vitest_1.vi.fn(),
+            validateConfig: (config) => {
+                // Call the actual validator in the mock
+                config_validator_1.ConfigValidator.validateProviderConfig(config);
+            },
+            getModelCapabilities: () => ({
+                maxTokens: 2000000,
+                supportsToolCalling: true,
+                supportsStructuredOutput: false,
+                supportsJsonMode: true,
+                supportsImageInput: false,
+                supportsAudioInput: false,
+                supportsVideoInput: false,
+                supportsStreaming: true,
+                supportsBatchProcessing: false,
+                supportsTokenUsage: true,
+                maxContextLength: 2000000,
+                maxOutputTokens: 8192,
+            }),
+        });
+        provider_factory_1.ProviderFactory.registerProvider('ollama', {
+            name: 'ollama',
+            isAvailable: () => false,
+            createClassificationModel: vitest_1.vi.fn(),
+            createExtractionModel: vitest_1.vi.fn(),
+            validateConfig: vitest_1.vi.fn(),
+            getModelCapabilities: () => ({
+                maxTokens: 128000,
+                supportsToolCalling: false,
+                supportsStructuredOutput: false,
+                supportsJsonMode: false,
+                supportsImageInput: false,
+                supportsAudioInput: false,
+                supportsVideoInput: false,
+                supportsStreaming: true,
+                supportsBatchProcessing: false,
+                supportsTokenUsage: false,
+                maxContextLength: 128000,
+                maxOutputTokens: 2048,
+            }),
+        });
     });
     (0, vitest_1.describe)('Provider Registration and Availability', () => {
-        (0, vitest_1.it)('should have all default providers registered', async () => {
-            // Import after mocks are set up
-            const { ProviderFactory } = await Promise.resolve().then(() => __importStar(require('../core/provider-factory')));
-            const availableProviders = ProviderFactory.getAvailableProviders();
-            // Should include at least the main providers
-            (0, vitest_1.expect)(availableProviders.length).toBeGreaterThan(0);
+        (0, vitest_1.it)('should have all default providers registered', () => {
+            const availableProviders = provider_factory_1.ProviderFactory.getAvailableProviders();
+            // Should include available providers (not ollama which is unavailable)
+            (0, vitest_1.expect)(availableProviders.length).toBe(3);
+            (0, vitest_1.expect)(availableProviders).toContain('openai');
+            (0, vitest_1.expect)(availableProviders).toContain('anthropic');
+            (0, vitest_1.expect)(availableProviders).toContain('vertexai');
         });
-        (0, vitest_1.it)('should detect available providers correctly', async () => {
-            const { ProviderFactory } = await Promise.resolve().then(() => __importStar(require('../core/provider-factory')));
+        (0, vitest_1.it)('should detect available providers correctly', () => {
             // Check availability of different providers
-            const isOpenAIAvailable = ProviderFactory.isProviderAvailable('openai');
-            const isOllamaAvailable = ProviderFactory.isProviderAvailable('ollama');
+            const isOpenAIAvailable = provider_factory_1.ProviderFactory.isProviderAvailable('openai');
+            const isOllamaAvailable = provider_factory_1.ProviderFactory.isProviderAvailable('ollama');
             (0, vitest_1.expect)(isOpenAIAvailable).toBe(true);
             (0, vitest_1.expect)(isOllamaAvailable).toBe(false); // Mocked as unavailable
         });
     });
     (0, vitest_1.describe)('Provider Creation', () => {
-        (0, vitest_1.it)('should create OpenAI provider with valid config', async () => {
-            const { ProviderFactory } = await Promise.resolve().then(() => __importStar(require('../core/provider-factory')));
+        (0, vitest_1.it)('should create OpenAI provider with valid config', () => {
             const config = {
                 provider: 'openai',
                 apiKey: 'sk-test-key',
@@ -134,7 +230,7 @@ vitest_1.vi.mock('../core/config-validator', () => ({
             };
             // Mock validation to pass
             vitest_1.vi.mocked(config_validator_1.ConfigValidator.validateProviderConfig).mockImplementation(() => { });
-            const provider = ProviderFactory.createProvider(config);
+            const provider = provider_factory_1.ProviderFactory.createProvider(config);
             (0, vitest_1.expect)(provider).toBeDefined();
             (0, vitest_1.expect)(provider.name).toBe('openai');
             (0, vitest_1.expect)(config_validator_1.ConfigValidator.validateProviderConfig).toHaveBeenCalledWith(config);

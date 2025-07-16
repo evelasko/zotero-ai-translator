@@ -7,6 +7,7 @@ exports.Translator = void 0;
 const types_1 = require("../types");
 const content_extractor_1 = require("../utils/content-extractor");
 const ai_service_1 = require("./ai-service");
+const config_validator_1 = require("./config-validator");
 /**
  * Main Translator class that orchestrates content ingestion and AI-powered translation
  */
@@ -236,9 +237,7 @@ class Translator {
         // Validate AI configuration if provided
         if (this.config.ai) {
             try {
-                // Import ConfigValidator dynamically to avoid circular dependencies
-                const { ConfigValidator } = require('./config-validator');
-                ConfigValidator.validateProviderConfig(this.config.ai);
+                config_validator_1.ConfigValidator.validateProviderConfig(this.config.ai);
             }
             catch (error) {
                 throw new types_1.ConfigurationError(`AI configuration validation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);

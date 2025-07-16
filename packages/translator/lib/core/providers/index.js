@@ -7,15 +7,19 @@ exports.ProviderFactory = exports.ProviderDetector = exports.VertexAIProvider = 
 exports.registerAllProviders = registerAllProviders;
 exports.getProviderStatus = getProviderStatus;
 const provider_factory_1 = require("../provider-factory");
+const anthropic_provider_1 = require("./anthropic-provider");
+const ollama_provider_1 = require("./ollama-provider");
+const openai_provider_1 = require("./openai-provider");
+const vertexai_provider_1 = require("./vertexai-provider");
 // Provider implementations
-var anthropic_provider_1 = require("./anthropic-provider");
-Object.defineProperty(exports, "AnthropicProvider", { enumerable: true, get: function () { return anthropic_provider_1.AnthropicProvider; } });
-var ollama_provider_1 = require("./ollama-provider");
-Object.defineProperty(exports, "OllamaProvider", { enumerable: true, get: function () { return ollama_provider_1.OllamaProvider; } });
-var openai_provider_1 = require("./openai-provider");
-Object.defineProperty(exports, "OpenAIProvider", { enumerable: true, get: function () { return openai_provider_1.OpenAIProvider; } });
-var vertexai_provider_1 = require("./vertexai-provider");
-Object.defineProperty(exports, "VertexAIProvider", { enumerable: true, get: function () { return vertexai_provider_1.VertexAIProvider; } });
+var anthropic_provider_2 = require("./anthropic-provider");
+Object.defineProperty(exports, "AnthropicProvider", { enumerable: true, get: function () { return anthropic_provider_2.AnthropicProvider; } });
+var ollama_provider_2 = require("./ollama-provider");
+Object.defineProperty(exports, "OllamaProvider", { enumerable: true, get: function () { return ollama_provider_2.OllamaProvider; } });
+var openai_provider_2 = require("./openai-provider");
+Object.defineProperty(exports, "OpenAIProvider", { enumerable: true, get: function () { return openai_provider_2.OpenAIProvider; } });
+var vertexai_provider_2 = require("./vertexai-provider");
+Object.defineProperty(exports, "VertexAIProvider", { enumerable: true, get: function () { return vertexai_provider_2.VertexAIProvider; } });
 // Re-export factory and detector
 var provider_factory_2 = require("../provider-factory");
 Object.defineProperty(exports, "ProviderDetector", { enumerable: true, get: function () { return provider_factory_2.ProviderDetector; } });
@@ -28,32 +32,28 @@ function registerAllProviders() {
     // when optional dependencies are not installed
     // Register OpenAI provider if available
     try {
-        const { OpenAIProvider } = require('./openai-provider');
-        provider_factory_1.ProviderFactory.registerProvider('openai', new OpenAIProvider());
+        provider_factory_1.ProviderFactory.registerProvider('openai', new openai_provider_1.OpenAIProvider());
     }
     catch (error) {
         // OpenAI provider not available
     }
     // Register Anthropic provider if available
     try {
-        const { AnthropicProvider } = require('./anthropic-provider');
-        provider_factory_1.ProviderFactory.registerProvider('anthropic', new AnthropicProvider());
+        provider_factory_1.ProviderFactory.registerProvider('anthropic', new anthropic_provider_1.AnthropicProvider());
     }
     catch (error) {
         // Anthropic provider not available
     }
     // Register Vertex AI provider if available
     try {
-        const { VertexAIProvider } = require('./vertexai-provider');
-        provider_factory_1.ProviderFactory.registerProvider('vertexai', new VertexAIProvider());
+        provider_factory_1.ProviderFactory.registerProvider('vertexai', new vertexai_provider_1.VertexAIProvider());
     }
     catch (error) {
         // Vertex AI provider not available
     }
     // Register Ollama provider if available
     try {
-        const { OllamaProvider } = require('./ollama-provider');
-        provider_factory_1.ProviderFactory.registerProvider('ollama', new OllamaProvider());
+        provider_factory_1.ProviderFactory.registerProvider('ollama', new ollama_provider_1.OllamaProvider());
     }
     catch (error) {
         // Ollama provider not available
@@ -69,8 +69,7 @@ function getProviderStatus() {
         recommendations: {
             openai: (() => {
                 try {
-                    const { OpenAIProvider } = require('./openai-provider');
-                    return OpenAIProvider.getRecommendedModels();
+                    return openai_provider_1.OpenAIProvider.getRecommendedModels();
                 }
                 catch {
                     return null;
@@ -78,8 +77,7 @@ function getProviderStatus() {
             })(),
             anthropic: (() => {
                 try {
-                    const { AnthropicProvider } = require('./anthropic-provider');
-                    return AnthropicProvider.getRecommendedModels();
+                    return anthropic_provider_1.AnthropicProvider.getRecommendedModels();
                 }
                 catch {
                     return null;
@@ -87,8 +85,7 @@ function getProviderStatus() {
             })(),
             vertexai: (() => {
                 try {
-                    const { VertexAIProvider } = require('./vertexai-provider');
-                    return VertexAIProvider.getRecommendedModels();
+                    return vertexai_provider_1.VertexAIProvider.getRecommendedModels();
                 }
                 catch {
                     return null;
@@ -96,8 +93,7 @@ function getProviderStatus() {
             })(),
             ollama: (() => {
                 try {
-                    const { OllamaProvider } = require('./ollama-provider');
-                    return OllamaProvider.getRecommendedModels();
+                    return ollama_provider_1.OllamaProvider.getRecommendedModels();
                 }
                 catch {
                     return null;

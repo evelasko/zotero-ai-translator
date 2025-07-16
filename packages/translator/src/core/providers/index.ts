@@ -3,6 +3,10 @@
  */
 
 import { ProviderFactory } from '../provider-factory';
+import { AnthropicProvider } from './anthropic-provider';
+import { OllamaProvider } from './ollama-provider';
+import { OpenAIProvider } from './openai-provider';
+import { VertexAIProvider } from './vertexai-provider';
 
 // Provider implementations
 export { AnthropicProvider } from './anthropic-provider';
@@ -22,7 +26,6 @@ export function registerAllProviders(): void {
 
   // Register OpenAI provider if available
   try {
-    const { OpenAIProvider } = require('./openai-provider');
     ProviderFactory.registerProvider('openai', new OpenAIProvider());
   } catch (error) {
     // OpenAI provider not available
@@ -30,7 +33,6 @@ export function registerAllProviders(): void {
 
   // Register Anthropic provider if available
   try {
-    const { AnthropicProvider } = require('./anthropic-provider');
     ProviderFactory.registerProvider('anthropic', new AnthropicProvider());
   } catch (error) {
     // Anthropic provider not available
@@ -38,7 +40,6 @@ export function registerAllProviders(): void {
 
   // Register Vertex AI provider if available
   try {
-    const { VertexAIProvider } = require('./vertexai-provider');
     ProviderFactory.registerProvider('vertexai', new VertexAIProvider());
   } catch (error) {
     // Vertex AI provider not available
@@ -46,7 +47,6 @@ export function registerAllProviders(): void {
 
   // Register Ollama provider if available
   try {
-    const { OllamaProvider } = require('./ollama-provider');
     ProviderFactory.registerProvider('ollama', new OllamaProvider());
   } catch (error) {
     // Ollama provider not available
@@ -63,7 +63,6 @@ export function getProviderStatus() {
     recommendations: {
       openai: (() => {
         try {
-          const { OpenAIProvider } = require('./openai-provider');
           return OpenAIProvider.getRecommendedModels();
         } catch {
           return null;
@@ -71,7 +70,6 @@ export function getProviderStatus() {
       })(),
       anthropic: (() => {
         try {
-          const { AnthropicProvider } = require('./anthropic-provider');
           return AnthropicProvider.getRecommendedModels();
         } catch {
           return null;
@@ -79,7 +77,6 @@ export function getProviderStatus() {
       })(),
       vertexai: (() => {
         try {
-          const { VertexAIProvider } = require('./vertexai-provider');
           return VertexAIProvider.getRecommendedModels();
         } catch {
           return null;
@@ -87,7 +84,6 @@ export function getProviderStatus() {
       })(),
       ollama: (() => {
         try {
-          const { OllamaProvider } = require('./ollama-provider');
           return OllamaProvider.getRecommendedModels();
         } catch {
           return null;

@@ -78,6 +78,13 @@ class ProviderFactoryImpl implements IProviderFactory {
   getRegisteredProviders(): ProviderName[] {
     return Array.from(this.providers.keys());
   }
+
+  /**
+   * Reset the provider factory (for testing)
+   */
+  reset(): void {
+    this.providers.clear();
+  }
 }
 
 /**

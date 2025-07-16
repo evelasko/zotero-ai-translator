@@ -18,18 +18,23 @@ class OpenAIProvider {
         if (config.provider !== 'openai') {
             throw new types_1.ConfigurationError('Invalid provider configuration for OpenAI');
         }
-        const { ChatOpenAI } = require('@langchain/openai');
-        return new ChatOpenAI({
-            modelName: config.classificationModel || 'gpt-4o-mini',
-            temperature: config.temperature || 0.1,
-            maxTokens: config.maxTokens || 2000,
-            maxRetries: config.maxRetries || 2,
-            openAIApiKey: config.apiKey,
-            configuration: {
-                ...(config.baseURL && { baseURL: config.baseURL }),
-                ...(config.organization && { organization: config.organization }),
-            },
-        });
+        try {
+            const { ChatOpenAI } = require('@langchain/openai');
+            return new ChatOpenAI({
+                modelName: config.classificationModel || 'gpt-4o-mini',
+                temperature: config.temperature || 0.1,
+                maxTokens: config.maxTokens || 2000,
+                maxRetries: config.maxRetries || 2,
+                openAIApiKey: config.apiKey,
+                configuration: {
+                    ...(config.baseURL && { baseURL: config.baseURL }),
+                    ...(config.organization && { organization: config.organization }),
+                },
+            });
+        }
+        catch (error) {
+            throw new types_1.ConfigurationError('OpenAI provider not available. Please install @langchain/openai');
+        }
     }
     /**
      * Create a chat model instance for extraction
@@ -38,18 +43,23 @@ class OpenAIProvider {
         if (config.provider !== 'openai') {
             throw new types_1.ConfigurationError('Invalid provider configuration for OpenAI');
         }
-        const { ChatOpenAI } = require('@langchain/openai');
-        return new ChatOpenAI({
-            modelName: config.extractionModel || 'gpt-4o-mini',
-            temperature: config.temperature || 0.1,
-            maxTokens: config.maxTokens || 2000,
-            maxRetries: config.maxRetries || 2,
-            openAIApiKey: config.apiKey,
-            configuration: {
-                ...(config.baseURL && { baseURL: config.baseURL }),
-                ...(config.organization && { organization: config.organization }),
-            },
-        });
+        try {
+            const { ChatOpenAI } = require('@langchain/openai');
+            return new ChatOpenAI({
+                modelName: config.extractionModel || 'gpt-4o-mini',
+                temperature: config.temperature || 0.1,
+                maxTokens: config.maxTokens || 2000,
+                maxRetries: config.maxRetries || 2,
+                openAIApiKey: config.apiKey,
+                configuration: {
+                    ...(config.baseURL && { baseURL: config.baseURL }),
+                    ...(config.organization && { organization: config.organization }),
+                },
+            });
+        }
+        catch (error) {
+            throw new types_1.ConfigurationError('OpenAI provider not available. Please install @langchain/openai');
+        }
     }
     /**
      * Validate OpenAI-specific configuration

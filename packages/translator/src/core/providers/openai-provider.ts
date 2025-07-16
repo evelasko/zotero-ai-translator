@@ -27,19 +27,23 @@ export class OpenAIProvider implements LLMProvider {
       throw new ConfigurationError('Invalid provider configuration for OpenAI');
     }
 
-    const { ChatOpenAI } = require('@langchain/openai');
+    try {
+      const { ChatOpenAI } = require('@langchain/openai');
 
-    return new ChatOpenAI({
-      modelName: config.classificationModel || 'gpt-4o-mini',
-      temperature: config.temperature || 0.1,
-      maxTokens: config.maxTokens || 2000,
-      maxRetries: config.maxRetries || 2,
-      openAIApiKey: config.apiKey,
-      configuration: {
-        ...(config.baseURL && { baseURL: config.baseURL }),
-        ...(config.organization && { organization: config.organization }),
-      },
-    });
+      return new ChatOpenAI({
+        modelName: config.classificationModel || 'gpt-4o-mini',
+        temperature: config.temperature || 0.1,
+        maxTokens: config.maxTokens || 2000,
+        maxRetries: config.maxRetries || 2,
+        openAIApiKey: config.apiKey,
+        configuration: {
+          ...(config.baseURL && { baseURL: config.baseURL }),
+          ...(config.organization && { organization: config.organization }),
+        },
+      });
+    } catch (error) {
+      throw new ConfigurationError('OpenAI provider not available. Please install @langchain/openai');
+    }
   }
 
   /**
@@ -50,19 +54,23 @@ export class OpenAIProvider implements LLMProvider {
       throw new ConfigurationError('Invalid provider configuration for OpenAI');
     }
 
-    const { ChatOpenAI } = require('@langchain/openai');
+    try {
+      const { ChatOpenAI } = require('@langchain/openai');
 
-    return new ChatOpenAI({
-      modelName: config.extractionModel || 'gpt-4o-mini',
-      temperature: config.temperature || 0.1,
-      maxTokens: config.maxTokens || 2000,
-      maxRetries: config.maxRetries || 2,
-      openAIApiKey: config.apiKey,
-      configuration: {
-        ...(config.baseURL && { baseURL: config.baseURL }),
-        ...(config.organization && { organization: config.organization }),
-      },
-    });
+      return new ChatOpenAI({
+        modelName: config.extractionModel || 'gpt-4o-mini',
+        temperature: config.temperature || 0.1,
+        maxTokens: config.maxTokens || 2000,
+        maxRetries: config.maxRetries || 2,
+        openAIApiKey: config.apiKey,
+        configuration: {
+          ...(config.baseURL && { baseURL: config.baseURL }),
+          ...(config.organization && { organization: config.organization }),
+        },
+      });
+    } catch (error) {
+      throw new ConfigurationError('OpenAI provider not available. Please install @langchain/openai');
+    }
   }
 
   /**

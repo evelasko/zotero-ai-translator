@@ -178,6 +178,10 @@ export class ConfigValidator {
       throw new ConfigurationError('Google Cloud project ID must be a string');
     }
 
+    if (!config.location) {
+      throw new ConfigurationError('Vertex AI location is required');
+    }
+
     if (config.location) {
       if (typeof config.location !== 'string') {
         throw new ConfigurationError('Vertex AI location must be a string');

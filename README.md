@@ -2,6 +2,10 @@
 
 A suite of TypeScript packages for AI-powered Zotero translation, built as a monorepo with Turborepo.
 
+## 📦 Release Process
+
+This project uses a **tag-based release workflow**. Packages are published to npm only when a version tag is pushed. See [RELEASE.md](./RELEASE.md) for detailed instructions.
+
 ## Packages
 
 ### [`@zotero-suite/schema-types`](./packages/schema-types)

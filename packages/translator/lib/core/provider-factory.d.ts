@@ -31,6 +31,10 @@ declare class ProviderFactoryImpl implements IProviderFactory {
      * Get all registered provider names (including unavailable ones)
      */
     getRegisteredProviders(): ProviderName[];
+    /**
+     * Reset the provider factory (for testing)
+     */
+    reset(): void;
 }
 /**
  * Global provider factory instance

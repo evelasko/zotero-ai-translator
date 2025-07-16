@@ -5,6 +5,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ConfigValidator } from '../core/config-validator';
 import { AIProviderConfig, ConfigurationError } from '../types';
+import { ProviderFactory } from '../core/provider-factory';
 
 // Mock the actual provider implementations
 vi.mock('../core/providers/openai-provider', () => ({
@@ -77,22 +78,121 @@ vi.mock('../core/config-validator', () => ({
 describe('ProviderFactory', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    
+    // Reset the provider factory and manually register mocked providers
+    ProviderFactory.reset();
+    
+    // Register mock providers
+    ProviderFactory.registerProvider('openai', {
+      name: 'openai',
+      isAvailable: () => true,
+      createClassificationModel: vi.fn(),
+      createExtractionModel: vi.fn(),
+      validateConfig: (config) => {
+        // Call the actual validator in the mock
+        ConfigValidator.validateProviderConfig(config);
+      },
+      getModelCapabilities: () => ({
+        maxTokens: 128000,
+        supportsToolCalling: true,
+        supportsStructuredOutput: true,
+        supportsJsonMode: true,
+        supportsImageInput: true,
+        supportsAudioInput: false,
+        supportsVideoInput: false,
+        supportsStreaming: true,
+        supportsBatchProcessing: false,
+        supportsTokenUsage: true,
+        maxContextLength: 128000,
+        maxOutputTokens: 4096,
+      }),
+    });
+    
+    ProviderFactory.registerProvider('anthropic', {
+      name: 'anthropic',
+      isAvailable: () => true,
+      createClassificationModel: vi.fn(),
+      createExtractionModel: vi.fn(),
+      validateConfig: (config) => {
+        // Call the actual validator in the mock
+        ConfigValidator.validateProviderConfig(config);
+      },
+      getModelCapabilities: () => ({
+        maxTokens: 200000,
+        supportsToolCalling: true,
+        supportsStructuredOutput: true,
+        supportsJsonMode: true,
+        supportsImageInput: true,
+        supportsAudioInput: false,
+        supportsVideoInput: false,
+        supportsStreaming: true,
+        supportsBatchProcessing: false,
+        supportsTokenUsage: true,
+        maxContextLength: 200000,
+        maxOutputTokens: 8192,
+      }),
+    });
+    
+    ProviderFactory.registerProvider('vertexai', {
+      name: 'vertexai',
+      isAvailable: () => true,
+      createClassificationModel: vi.fn(),
+      createExtractionModel: vi.fn(),
+      validateConfig: (config) => {
+        // Call the actual validator in the mock
+        ConfigValidator.validateProviderConfig(config);
+      },
+      getModelCapabilities: () => ({
+        maxTokens: 2000000,
+        supportsToolCalling: true,
+        supportsStructuredOutput: false,
+        supportsJsonMode: true,
+        supportsImageInput: false,
+        supportsAudioInput: false,
+        supportsVideoInput: false,
+        supportsStreaming: true,
+        supportsBatchProcessing: false,
+        supportsTokenUsage: true,
+        maxContextLength: 2000000,
+        maxOutputTokens: 8192,
+      }),
+    });
+    
+    ProviderFactory.registerProvider('ollama', {
+      name: 'ollama',
+      isAvailable: () => false,
+      createClassificationModel: vi.fn(),
+      createExtractionModel: vi.fn(),
+      validateConfig: vi.fn(),
+      getModelCapabilities: () => ({
+        maxTokens: 128000,
+        supportsToolCalling: false,
+        supportsStructuredOutput: false,
+        supportsJsonMode: false,
+        supportsImageInput: false,
+        supportsAudioInput: false,
+        supportsVideoInput: false,
+        supportsStreaming: true,
+        supportsBatchProcessing: false,
+        supportsTokenUsage: false,
+        maxContextLength: 128000,
+        maxOutputTokens: 2048,
+      }),
+    });
   });
 
   describe('Provider Registration and Availability', () => {
-    it('should have all default providers registered', async () => {
-      // Import after mocks are set up
-      const { ProviderFactory } = await import('../core/provider-factory');
-
+    it('should have all default providers registered', () => {
       const availableProviders = ProviderFactory.getAvailableProviders();
-
-      // Should include at least the main providers
-      expect(availableProviders.length).toBeGreaterThan(0);
+      
+      // Should include available providers (not ollama which is unavailable)
+      expect(availableProviders.length).toBe(3);
+      expect(availableProviders).toContain('openai');
+      expect(availableProviders).toContain('anthropic');
+      expect(availableProviders).toContain('vertexai');
     });
 
-    it('should detect available providers correctly', async () => {
-      const { ProviderFactory } = await import('../core/provider-factory');
-
+    it('should detect available providers correctly', () => {
       // Check availability of different providers
       const isOpenAIAvailable = ProviderFactory.isProviderAvailable('openai');
       const isOllamaAvailable = ProviderFactory.isProviderAvailable('ollama');
@@ -103,9 +203,7 @@ describe('ProviderFactory', () => {
   });
 
   describe('Provider Creation', () => {
-    it('should create OpenAI provider with valid config', async () => {
-      const { ProviderFactory } = await import('../core/provider-factory');
-
+    it('should create OpenAI provider with valid config', () => {
       const config: AIProviderConfig = {
         provider: 'openai',
         apiKey: 'sk-test-key',

@@ -59,6 +59,12 @@ class ProviderFactoryImpl {
     getRegisteredProviders() {
         return Array.from(this.providers.keys());
     }
+    /**
+     * Reset the provider factory (for testing)
+     */
+    reset() {
+        this.providers.clear();
+    }
 }
 /**
  * Global provider factory instance

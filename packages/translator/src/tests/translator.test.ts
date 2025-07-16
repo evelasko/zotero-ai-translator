@@ -5,6 +5,33 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { Translator } from '../core/translator';
 import { AIProviderConfig, ConfigurationError, TranslatorConfig } from '../types';
+import { registerAllProviders } from '../core/providers';
+
+// Mock ContentExtractor to avoid network calls
+vi.mock('../utils/content-extractor', () => ({
+  ContentExtractor: vi.fn().mockImplementation(() => ({
+    extractFromUrl: vi.fn().mockResolvedValue({
+      text: 'Test content for URL extraction',
+      title: 'Test Article',
+      url: 'https://example.com/article',
+      contentType: 'text/html',
+      metadata: {
+        author: 'Test Author',
+        publishedDate: '2024-01-01',
+        excerpt: 'Test excerpt',
+        language: 'en',
+      },
+    }),
+    extractFromSourceText: vi.fn().mockResolvedValue({
+      text: 'Test content for source text extraction',
+      title: 'Test Article',
+      contentType: 'text/plain',
+      metadata: {
+        language: 'en',
+      },
+    }),
+  })),
+}));
 
 // Mock LangChain modules to avoid requiring actual API keys in tests
 vi.mock('@langchain/openai', () => ({
@@ -48,6 +75,9 @@ describe('Translator', () => {
   let translator: Translator;
 
   beforeEach(() => {
+    // Register providers before each test
+    registerAllProviders();
+    
     translator = new Translator({
       debug: false,
       timeout: 5000,

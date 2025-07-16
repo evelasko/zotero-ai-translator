@@ -6,31 +6,125 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const vitest_1 = require("vitest");
 const ai_service_1 = require("../core/ai-service");
 const types_1 = require("../types");
+const providers_1 = require("../core/providers");
+const provider_factory_1 = require("../core/provider-factory");
 // Mock LangChain modules
 vitest_1.vi.mock('@langchain/openai', () => ({
-    ChatOpenAI: vitest_1.vi.fn().mockImplementation(() => ({
-    // Mock implementation
-    })),
+    ChatOpenAI: vitest_1.vi.fn().mockImplementation(() => {
+        let callCount = 0;
+        return {
+            invoke: vitest_1.vi.fn().mockImplementation(async () => {
+                callCount++;
+                if (callCount % 2 === 1) {
+                    // Odd calls: classification
+                    return { content: 'webpage' };
+                }
+                else {
+                    // Even calls: extraction
+                    return {
+                        content: JSON.stringify({
+                            itemType: 'webpage',
+                            title: 'Test Article',
+                            creators: [{ firstName: 'Test', lastName: 'Author', creatorType: 'author' }],
+                            abstractNote: 'Test abstract',
+                            date: '2024-01-01',
+                            url: 'https://example.com/article',
+                        }),
+                    };
+                }
+            }),
+        };
+    }),
 }));
 vitest_1.vi.mock('@langchain/anthropic', () => ({
-    ChatAnthropic: vitest_1.vi.fn().mockImplementation(() => ({
-    // Mock implementation
-    })),
+    ChatAnthropic: vitest_1.vi.fn().mockImplementation(() => {
+        let callCount = 0;
+        return {
+            invoke: vitest_1.vi.fn().mockImplementation(async () => {
+                callCount++;
+                if (callCount % 2 === 1) {
+                    return { content: 'webpage' };
+                }
+                else {
+                    return {
+                        content: JSON.stringify({
+                            itemType: 'webpage',
+                            title: 'Test Article',
+                            creators: [{ firstName: 'Test', lastName: 'Author', creatorType: 'author' }],
+                            abstractNote: 'Test abstract',
+                            date: '2024-01-01',
+                            url: 'https://example.com/article',
+                        }),
+                    };
+                }
+            }),
+        };
+    }),
 }));
 vitest_1.vi.mock('@langchain/google-vertexai', () => ({
-    ChatVertexAI: vitest_1.vi.fn().mockImplementation(() => ({
-    // Mock implementation
-    })),
+    ChatVertexAI: vitest_1.vi.fn().mockImplementation(() => {
+        let callCount = 0;
+        return {
+            invoke: vitest_1.vi.fn().mockImplementation(async () => {
+                callCount++;
+                if (callCount % 2 === 1) {
+                    return { content: 'webpage' };
+                }
+                else {
+                    return {
+                        content: JSON.stringify({
+                            itemType: 'webpage',
+                            title: 'Test Article',
+                            creators: [{ firstName: 'Test', lastName: 'Author', creatorType: 'author' }],
+                            abstractNote: 'Test abstract',
+                            date: '2024-01-01',
+                            url: 'https://example.com/article',
+                        }),
+                    };
+                }
+            }),
+        };
+    }),
 }));
 vitest_1.vi.mock('@langchain/ollama', () => ({
-    ChatOllama: vitest_1.vi.fn().mockImplementation(() => ({
-    // Mock implementation
-    })),
+    ChatOllama: vitest_1.vi.fn().mockImplementation(() => {
+        let callCount = 0;
+        return {
+            invoke: vitest_1.vi.fn().mockImplementation(async () => {
+                callCount++;
+                if (callCount % 2 === 1) {
+                    return { content: 'webpage' };
+                }
+                else {
+                    return {
+                        content: JSON.stringify({
+                            itemType: 'webpage',
+                            title: 'Test Article',
+                            creators: [{ firstName: 'Test', lastName: 'Author', creatorType: 'author' }],
+                            abstractNote: 'Test abstract',
+                            date: '2024-01-01',
+                            url: 'https://example.com/article',
+                        }),
+                    };
+                }
+            }),
+        };
+    }),
 }));
 vitest_1.vi.mock('@langchain/core/output_parsers', () => ({
     StructuredOutputParser: {
         fromZodSchema: vitest_1.vi.fn().mockReturnValue({
             getFormatInstructions: vitest_1.vi.fn().mockReturnValue('Format instructions'),
+            parse: vitest_1.vi.fn().mockResolvedValue({
+                itemType: 'webpage',
+                title: 'Test Title',
+                creators: [],
+                tags: [],
+                collections: [],
+                relations: {},
+                dateAdded: new Date().toISOString(),
+                dateModified: new Date().toISOString(),
+            }),
         }),
     },
     OutputFixingParser: {
@@ -44,6 +138,10 @@ vitest_1.vi.mock('@langchain/core/output_parsers', () => ({
     let mockConfig;
     let mockContent;
     (0, vitest_1.beforeEach)(() => {
+        // Mock ProviderDetector to always return true for availability
+        vitest_1.vi.spyOn(provider_factory_1.ProviderDetector, 'isProviderInstalled').mockReturnValue(true);
+        // Register providers before each test
+        (0, providers_1.registerAllProviders)();
         mockConfig = {
             provider: 'openai',
             apiKey: 'sk-test-api-key',
@@ -64,7 +162,13 @@ vitest_1.vi.mock('@langchain/core/output_parsers', () => ({
                 language: 'en',
             },
         };
-        aiService = new ai_service_1.AIService(mockConfig);
+        // Create default aiService instance for tests that don't override it
+        try {
+            aiService = new ai_service_1.AIService(mockConfig);
+        }
+        catch (error) {
+            // Some tests may not have the right provider registered
+        }
     });
     (0, vitest_1.describe)('constructor', () => {
         (0, vitest_1.it)('should create AI service with OpenAI config', () => {
@@ -72,7 +176,8 @@ vitest_1.vi.mock('@langchain/core/output_parsers', () => ({
                 provider: 'openai',
                 apiKey: 'sk-test-key',
             };
-            (0, vitest_1.expect)(() => new ai_service_1.AIService(openaiConfig)).not.toThrow();
+            const aiService = new ai_service_1.AIService(openaiConfig);
+            (0, vitest_1.expect)(aiService).toBeDefined();
         });
         (0, vitest_1.it)('should create AI service with Anthropic config', () => {
             const anthropicConfig = {
