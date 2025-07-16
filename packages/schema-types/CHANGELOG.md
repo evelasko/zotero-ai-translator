@@ -1,7 +1,7 @@
 # @zotero-suite/schema-types
 
-## 2.0.0
+## 1.0.1
 
-### Major Changes
+### Patch Changes
 
 - Initial Release

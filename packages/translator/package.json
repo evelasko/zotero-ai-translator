@@ -1,6 +1,6 @@
 {
   "name": "@zotero-suite/translator",
-  "version": "2.0.0",
+  "version": "1.0.1",
   "description": "AI-powered content translation service for Zotero metadata extraction",
   "author": "Enrique Velasco",
   "license": "MIT",

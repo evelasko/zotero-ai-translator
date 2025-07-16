@@ -1,12 +1,9 @@
 # @zotero-suite/client
 
-## 2.0.0
-
-### Major Changes
-
-- Initial Release
+## 1.0.1
 
 ### Patch Changes
 
+- Initial Release
 - Updated dependencies
-  - @zotero-suite/schema-types@2.0.0
+  - @zotero-suite/schema-types@1.0.1
