@@ -4,7 +4,7 @@
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ItemsAPI = void 0;
-const schema_types_1 = require("@zotero-suite/schema-types");
+const zotero_schema_types_1 = require("zotero-schema-types");
 class ItemsAPI {
     constructor(httpClient) {
         Object.defineProperty(this, "httpClient", {
@@ -24,7 +24,7 @@ class ItemsAPI {
         if (Array.isArray(response.data)) {
             response.data.forEach(item => {
                 try {
-                    schema_types_1.ZoteroItemSchema.parse(item);
+                    zotero_schema_types_1.ZoteroItemSchema.parse(item);
                 }
                 catch {
                     // Invalid item data received
@@ -44,7 +44,7 @@ class ItemsAPI {
         const response = await this.httpClient.get(endpoint, { params: params });
         // Validate response data
         try {
-            schema_types_1.ZoteroItemSchema.parse(response.data);
+            zotero_schema_types_1.ZoteroItemSchema.parse(response.data);
         }
         catch {
             // Invalid item data received
@@ -86,7 +86,7 @@ class ItemsAPI {
         const response = await this.httpClient.put(endpoint, itemData, { headers: requestHeaders });
         // Validate response data
         try {
-            schema_types_1.ZoteroItemSchema.parse(response.data);
+            zotero_schema_types_1.ZoteroItemSchema.parse(response.data);
         }
         catch {
             // Invalid item data received

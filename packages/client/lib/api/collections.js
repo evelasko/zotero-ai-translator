@@ -4,7 +4,7 @@
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CollectionsAPI = void 0;
-const schema_types_1 = require("@zotero-suite/schema-types");
+const zotero_schema_types_1 = require("zotero-schema-types");
 class CollectionsAPI {
     constructor(httpClient) {
         Object.defineProperty(this, "httpClient", {
@@ -24,7 +24,7 @@ class CollectionsAPI {
         if (Array.isArray(response.data)) {
             response.data.forEach(collection => {
                 try {
-                    schema_types_1.ZoteroCollectionSchema.parse(collection);
+                    zotero_schema_types_1.ZoteroCollectionSchema.parse(collection);
                 }
                 catch {
                     // Invalid collection data received
@@ -44,7 +44,7 @@ class CollectionsAPI {
         const response = await this.httpClient.get(endpoint, { params: params });
         // Validate response data
         try {
-            schema_types_1.ZoteroCollectionSchema.parse(response.data);
+            zotero_schema_types_1.ZoteroCollectionSchema.parse(response.data);
         }
         catch {
             // Invalid collection data received
@@ -85,7 +85,7 @@ class CollectionsAPI {
         const response = await this.httpClient.put(endpoint, collectionData, { headers: requestHeaders });
         // Validate response data
         try {
-            schema_types_1.ZoteroCollectionSchema.parse(response.data);
+            zotero_schema_types_1.ZoteroCollectionSchema.parse(response.data);
         }
         catch {
             // Invalid collection data received

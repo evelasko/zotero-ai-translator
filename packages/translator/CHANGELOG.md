@@ -1,4 +1,12 @@
-# @zotero-suite/translator
+# zotero-ai-translator
+
+## 1.0.2
+
+### Patch Changes
+
+- Changed scoping of packages
+- Updated dependencies
+  - zotero-schema-types@1.0.2
 
 ## 1.0.1
 
@@ -6,4 +14,4 @@
 
 - Initial Release
 - Updated dependencies
-  - @zotero-suite/schema-types@1.0.1
+  - zotero-schema-types@1.0.1

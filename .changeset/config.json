@@ -4,9 +4,9 @@
   "commit": false,
   "fixed": [
     [
-      "@zotero-suite/schema-types",
-      "@zotero-suite/client",
-      "@zotero-suite/translator"
+      "zotero-schema-types",
+      "zotero-web-client",
+      "zotero-ai-translator"
     ]
   ],
   "linked": [],

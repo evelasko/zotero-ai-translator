@@ -5,7 +5,7 @@
 import { BaseChatModel } from '@langchain/core/language_models/chat_models';
 import { StructuredOutputParser } from '@langchain/core/output_parsers';
 import { PromptTemplate } from '@langchain/core/prompts';
-import { ZoteroItemData, ZoteroItemType } from '@zotero-suite/schema-types';
+import { ZoteroItemData, ZoteroItemType } from 'zotero-schema-types';
 import { z } from 'zod';
 import {
   AIClassificationError,

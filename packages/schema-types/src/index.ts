@@ -1,5 +1,5 @@
 /**
- * @zotero-suite/schema-types
+ * zotero-schema-types
  * 
  * The foundational package that ingests the official Zotero schema.json
  * to generate and export Zod schemas and derived TypeScript types.

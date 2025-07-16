@@ -41,7 +41,7 @@ importers:
 
   packages/client:
     dependencies:
-      '@zotero-suite/schema-types':
+      zotero-schema-types:
         specifier: workspace:*
         version: link:../schema-types
     devDependencies:
@@ -94,9 +94,6 @@ importers:
       '@mozilla/readability':
         specifier: ^0.6.0
         version: 0.6.0
-      '@zotero-suite/schema-types':
-        specifier: workspace:*
-        version: link:../schema-types
       axios:
         specifier: ^1.10.0
         version: 1.10.0
@@ -112,6 +109,9 @@ importers:
       zod:
         specifier: ^4.0.5
         version: 4.0.5
+      zotero-schema-types:
+        specifier: workspace:*
+        version: link:../schema-types
     devDependencies:
       '@langchain/anthropic':
         specifier: ^0.3.24

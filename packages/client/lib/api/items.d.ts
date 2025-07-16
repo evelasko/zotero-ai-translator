@@ -2,7 +2,7 @@
  * Items API implementation for the Zotero Web API client
  */
 import { ZoteroHttpClient, ZoteroResponse, PaginationInfo } from '../core/http';
-import { ZoteroItem, ZoteroItemData } from '@zotero-suite/schema-types';
+import { ZoteroItem, ZoteroItemData } from 'zotero-schema-types';
 export interface ItemsQueryParams {
     /**
      * Return only items with the given tags

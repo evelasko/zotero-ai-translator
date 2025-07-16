@@ -142,7 +142,7 @@ export {
   ZoteroSyncErrorSchema,
   ZoteroAPIResponseSchema,
   ZoteroWriteTokenSchema
-} from '@zotero-suite/schema-types';
+} from 'zotero-schema-types';
 
 // Default export for convenience
 export { ZoteroClient as default } from './core/client';

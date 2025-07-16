@@ -1,6 +1,6 @@
 {
-  "name": "@zotero-suite/client",
-  "version": "1.0.1",
+  "name": "zotero-web-client",
+  "version": "1.0.2",
   "description": "A modern, robust, and type-safe Zotero Web API client for TypeScript/JavaScript",
   "author": "Enrique Velasco",
   "license": "MIT",
@@ -32,7 +32,7 @@
     "clean": "rm -rf lib dist"
   },
   "dependencies": {
-    "@zotero-suite/schema-types": "workspace:*"
+    "zotero-schema-types": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",

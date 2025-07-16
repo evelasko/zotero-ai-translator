@@ -8,15 +8,15 @@ This project uses a **tag-based release workflow**. Packages are published to np
 
 ## Packages
 
-### [`@zotero-suite/schema-types`](./packages/schema-types)
+### [`zotero-schema-types`](./packages/schema-types)
 
 The foundational package that ingests the official Zotero `schema.json` to generate and export Zod schemas and derived TypeScript types for the entire suite.
 
-### [`@zotero-suite/client`](./packages/client)
+### [`zotero-web-client`](./packages/client)
 
-The Zotero API Client - a modern, robust, and type-safe client for the Zotero Web API v3, refactored to consume all its types directly from the `@zotero-suite/schema-types` package.
+The Zotero API Client - a modern, robust, and type-safe client for the Zotero Web API v3, refactored to consume all its types directly from the `zotero-schema-types` package.
 
-### [`@zotero-suite/ai-translator`](./packages/ai-translator)
+### [`zotero-ai-translator`](./packages/translator)
 
 The AI Translator - translates unstructured content from URLs or raw text into structured, validated Zotero items using AI models via LangChain.
 

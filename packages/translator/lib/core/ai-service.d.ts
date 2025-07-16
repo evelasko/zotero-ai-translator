@@ -1,7 +1,7 @@
 /**
  * AI Service for LangChain-powered content translation with multi-provider support
  */
-import { ZoteroItemData } from '@zotero-suite/schema-types';
+import { ZoteroItemData } from 'zotero-schema-types';
 import { AIProviderConfig, ExtractedContent } from '../types';
 /**
  * AI Service class that handles the two-step AI translation process with multi-provider support

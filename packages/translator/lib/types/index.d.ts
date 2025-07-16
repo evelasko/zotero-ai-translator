@@ -1,7 +1,7 @@
 /**
  * Type definitions for the Zotero AI Translator package
  */
-import { ZoteroItemData } from '@zotero-suite/schema-types';
+import { ZoteroItemData } from 'zotero-schema-types';
 import { AIProviderConfig } from './providers';
 /**
  * Input configuration for URL-based translation

@@ -3,7 +3,7 @@
  */
 
 import { ZoteroHttpClient, ZoteroResponse, PaginationInfo } from '../core/http';
-import { ZoteroCollection, ZoteroCollectionData, ZoteroCollectionSchema } from '@zotero-suite/schema-types';
+import { ZoteroCollection, ZoteroCollectionData, ZoteroCollectionSchema } from 'zotero-schema-types';
 
 export interface CollectionsQueryParams {
   /**

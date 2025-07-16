@@ -2,7 +2,7 @@
  * Main Translator class for AI-powered Zotero metadata extraction
  */
 
-import { ZoteroItemData, ZoteroItemType } from '@zotero-suite/schema-types';
+import { ZoteroItemData, ZoteroItemType } from 'zotero-schema-types';
 import {
     ConfigurationError,
     ExtractedContent,

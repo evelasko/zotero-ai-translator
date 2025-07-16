@@ -2,7 +2,7 @@
  * Collections API implementation for the Zotero Web API client
  */
 import { ZoteroHttpClient, ZoteroResponse, PaginationInfo } from '../core/http';
-import { ZoteroCollection, ZoteroCollectionData } from '@zotero-suite/schema-types';
+import { ZoteroCollection, ZoteroCollectionData } from 'zotero-schema-types';
 export interface CollectionsQueryParams {
     /**
      * Return collections since the given library version
