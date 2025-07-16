@@ -48,7 +48,7 @@
 
 ### **3.1. Monorepo Structure**
 
-The project MUST be built as a monorepo managed by **Turborepo**. Package names should be scoped (e.g., `@zotero-suite/`).
+The project MUST be built as a monorepo managed by **Turborepo**. Package names use the zotero- prefix (e.g., `zotero-schema-types`).
 
 ### **3.2. Language and Build Process**
 
@@ -66,9 +66,9 @@ The monorepo will contain the following packages within a `/packages` directory:
 
 | Package Name                      | Description                                                                                                                                                             | Key Dependencies         |
 | --------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------ |
-| `@zotero-suite/schema-types`        | **The foundational package.** Ingests the official Zotero `schema.json` to generate and export Zod schemas and derived TypeScript types for the entire suite.              | `zod`                    |
-| `@zotero-suite/client`            | **The Zotero API Client.** The existing client, which will be refactored to consume all its types directly from the `@zotero-suite/schema-types` package.                    | `@zotero-suite/schema-types` |
-| `@zotero-suite/ai-translator`        | **The AI Translator (v1.0).** The core product of this PRD. Translates unstructured content from URLs or raw text into structured, validated Zotero items using the types directly from the `@zotero-suite/schema-types` so that the results can be easily used by the `@zotero-suite/client package`.                   | `langchain`, `axios`, `jsdom`, `@mozilla/readability`, `pdf-parse`, `@zotero-suite/schema-types` |
+| `zotero-schema-types`        | **The foundational package.** Ingests the official Zotero `schema.json` to generate and export Zod schemas and derived TypeScript types for the entire suite.              | `zod`                    |
+| `zotero-web-client`            | **The Zotero API Client.** The existing client, which will be refactored to consume all its types directly from the `zotero-schema-types` package.                    | `zotero-schema-types` |
+| `zotero-ai-translator`        | **The AI Translator (v1.0).** The core product of this PRD. Translates unstructured content from URLs or raw text into structured, validated Zotero items using the types directly from the `zotero-schema-types` so that the results can be easily used by the `zotero-web-client package`.                   | `langchain`, `axios`, `jsdom`, `@mozilla/readability`, `pdf-parse`, `zotero-schema-types` |
 
 ## **5.0 Detailed Functional Requirements for `ai-translator` (v1.0)**
 
@@ -85,7 +85,7 @@ The package will export a primary class, `Translator`.
     * `{ sourceText: string }`
   * `TranslationOptions`: An object for per-call configuration.
     * `fileSizeLimitMb?: number`: A limit for fetching files like PDFs.
-  * **Return Value:** A `Promise` that resolves to a single, validated Zotero Item object whose type comes from the `@zotero-suite/schema-types` package.
+  * **Return Value:** A `Promise` that resolves to a single, validated Zotero Item object whose type comes from the `zotero-schema-types` package.
   * **Error Handling:** The promise will reject with a custom, informative error (e.g., `FetchError`, `ParsingError`, `TranslationError`) upon failure.
 
 ### **5.2. Core Translation Pipeline**
@@ -104,8 +104,8 @@ The `translate` method will execute the following logical flow:
         a. **SKIP** all fetching and parsing steps.
         b. The `sourceText` is now the `processedText`.
 3. **AI Translation (Common Path):**
-    * **Step 1: Classification.** Send the `processedText` to an LLM via **LangChain.js**. The prompt will ask the model to choose the single most appropriate Zotero item type from a list dynamically populated from the schemas in `@zotero-suite/schema-types`.
-    * **Step 2: Extraction.** Use the item type from the previous step to make a second LLM call. This call MUST use a **LangChain Structured Output Parser**. The schema for this parser will be generated *at runtime* from the corresponding Zod schema imported from `@zotero-suite/schema-types`.
+    * **Step 1: Classification.** Send the `processedText` to an LLM via **LangChain.js**. The prompt will ask the model to choose the single most appropriate Zotero item type from a list dynamically populated from the schemas in `zotero-schema-types`.
+    * **Step 2: Extraction.** Use the item type from the previous step to make a second LLM call. This call MUST use a **LangChain Structured Output Parser**. The schema for this parser will be generated *at runtime* from the corresponding Zod schema imported from `zotero-schema-types`.
 4. **Validation & Formatting:**
     * Take the structured JSON response from the LLM.
     * Use the corresponding Zod schema's `.safeParse()` method to validate the data. If validation fails, throw a `TranslationError`.
@@ -120,7 +120,7 @@ The `translate` method will execute the following logical flow:
 
 ### **Version 1.0 will be considered complete and ready for release when:**
 
-1. A user can successfully install and use the `@zotero-suite/translator` package in a standard Node.js project.
+1. A user can successfully install and use the `zotero-ai-translator` package in a standard Node.js project.
 2. The `translate({ url: '...' })` method correctly translates a public blog post into a `blogPost` Zotero item.
 3. The `translate({ url: '...' })` method correctly translates a public PDF research paper into a `journalArticle` Zotero item.
 4. The `translate({ sourceText: '...' })` method correctly translates a supplied string of text into an appropriate Zotero item, successfully bypassing the fetch/parse logic.

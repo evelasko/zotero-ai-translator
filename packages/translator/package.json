@@ -1,6 +1,6 @@
 {
   "name": "zotero-ai-translator",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "AI-powered content translation service for Zotero metadata extraction",
   "author": "Enrique Velasco",
   "license": "MIT",

@@ -1,6 +1,6 @@
-# @zotero-suite/translator
+# zotero-ai-translator
 
-[![npm version](https://img.shields.io/npm/v/@zotero-suite/translator.svg)](https://www.npmjs.com/package/@zotero-suite/translator)
+[![npm version](https://img.shields.io/npm/v/zotero-ai-translator.svg)](https://www.npmjs.com/package/zotero-ai-translator)
 [![TypeScript](https://img.shields.io/badge/TypeScript-Ready-blue.svg)](https://www.typescriptlang.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Tests](https://img.shields.io/badge/Tests-90%2F134%20Passing-green.svg)](#test-status)
@@ -9,7 +9,7 @@ AI-powered content translation service for Zotero metadata extraction with multi
 
 ## Overview
 
-The `@zotero-suite/translator` package provides intelligent content processing and metadata extraction capabilities for converting web content, PDFs, and text into structured Zotero item data. It supports multiple AI providers and provides robust fallback mechanisms.
+The `zotero-ai-translator` package provides intelligent content processing and metadata extraction capabilities for converting web content, PDFs, and text into structured Zotero item data. It supports multiple AI providers and provides robust fallback mechanisms.
 
 ## Features
 
@@ -26,7 +26,7 @@ The `@zotero-suite/translator` package provides intelligent content processing a
 ## Installation
 
 ```bash
-npm install @zotero-suite/translator
+npm install zotero-ai-translator
 ```
 
 ### AI Provider Dependencies
@@ -52,7 +52,7 @@ npm install @langchain/ollama
 ### Basic Usage (No AI)
 
 ```typescript
-import { Translator } from '@zotero-suite/translator';
+import { Translator } from 'zotero-ai-translator';
 
 const translator = new Translator({
   timeout: 30000,
@@ -77,7 +77,7 @@ console.log(textResult.confidence); // Confidence score
 ### With AI Provider (OpenAI)
 
 ```typescript
-import { Translator } from '@zotero-suite/translator';
+import { Translator } from 'zotero-ai-translator';
 
 const translator = new Translator({
   ai: {

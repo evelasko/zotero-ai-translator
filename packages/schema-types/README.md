@@ -1,4 +1,4 @@
-# @zotero-suite/schema-types
+# zotero-schema-types
 
 The foundational package that ingests the official Zotero `schema.json` to
 generate and export Zod schemas and derived TypeScript types for the entire
@@ -18,7 +18,7 @@ Zotero AI Translator Suite.
 ## Installation
 
 ```bash
-npm install @zotero-suite/schema-types
+npm install zotero-schema-types
 ```
 
 ## Usage
@@ -31,7 +31,7 @@ import {
   ZoteroBookItemSchema,
   ZoteroItem,
   ZoteroBookItem,
-} from '@zotero-suite/schema-types';
+} from 'zotero-schema-types';
 
 // Validate a Zotero item
 const item: ZoteroItem = {
@@ -57,7 +57,7 @@ import {
   ZoteroSchemaProcessor,
   getItemTypeNames,
   getCreatorTypesForItem,
-} from '@zotero-suite/schema-types';
+} from 'zotero-schema-types';
 
 // Process schema and generate fresh types
 const processor = new ZoteroSchemaProcessor();

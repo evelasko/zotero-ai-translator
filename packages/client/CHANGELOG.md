@@ -1,5 +1,13 @@
 # zotero-web-client
 
+## 1.0.3
+
+### Patch Changes
+
+- Optimized documentation and instructions
+- Updated dependencies
+  - zotero-schema-types@1.0.3
+
 ## 1.0.2
 
 ### Patch Changes
