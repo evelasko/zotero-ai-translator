@@ -1,6 +1,6 @@
 {
   "name": "zotero-web-client",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "A modern, robust, and type-safe Zotero Web API client for TypeScript/JavaScript",
   "author": "Enrique Velasco",
   "license": "MIT",
@@ -38,7 +38,7 @@
     "@types/node": "^20.0.0",
     "msw": "^2.0.0",
     "typescript": "^5.0.0",
-    "vitest": "^1.0.0"
+    "vitest": "^3.2.4"
   },
   "engines": {
     "node": ">=18.0.0"

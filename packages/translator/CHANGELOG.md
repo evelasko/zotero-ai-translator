@@ -1,5 +1,13 @@
 # zotero-ai-translator
 
+## 2.0.1
+
+### Patch Changes
+
+- Minor changes in CI and Documentation
+- Updated dependencies
+  - zotero-schema-types@2.0.1
+
 ## 2.0.0
 
 ### Major Changes

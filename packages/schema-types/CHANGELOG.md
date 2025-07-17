@@ -1,5 +1,11 @@
 # zotero-schema-types
 
+## 2.0.1
+
+### Patch Changes
+
+- Minor changes in CI and Documentation
+
 ## 2.0.0
 
 ### Major Changes

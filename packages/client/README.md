@@ -1,12 +1,16 @@
 # zotero-web-client
 
-A modern, robust, and type-safe Zotero Web API client for TypeScript/JavaScript. This client provides comprehensive access to the Zotero Web API v3 with full TypeScript support, runtime validation, and comprehensive error handling.
+A modern, robust, and type-safe Zotero Web API client for TypeScript/JavaScript.
+This client provides comprehensive access to the Zotero Web API v3 with full
+TypeScript support, runtime validation, and comprehensive error handling.
 
 ## Features
 
-- **Type-safe**: Full TypeScript support with types generated from Zotero's official schema
+- **Type-safe**: Full TypeScript support with types generated from Zotero's
+  official schema
 - **Runtime validation**: Built-in validation using Zod schemas
-- **Comprehensive error handling**: Custom error classes for different API scenarios
+- **Comprehensive error handling**: Custom error classes for different API
+  scenarios
 - **Dual module support**: Both ESM and CommonJS supported
 - **Retry logic**: Automatic retry for transient failures
 - **Rate limiting**: Built-in rate limit handling
@@ -30,13 +34,13 @@ import { ZoteroClient, createClient } from 'zotero-web-client';
 // Create client with API key
 const client = createClient({
   apiKey: 'your-api-key',
-  userId: 'your-user-id'
+  userId: 'your-user-id',
 });
 
 // Or create manually
 const client = new ZoteroClient({
   apiKey: 'your-api-key',
-  userId: 'your-user-id'
+  userId: 'your-user-id',
 });
 
 // Get library items
@@ -47,11 +51,13 @@ console.log('Found items:', items.length);
 const newItem = await client.items.create({
   itemType: 'book',
   title: 'The Great Gatsby',
-  creators: [{
-    firstName: 'F. Scott',
-    lastName: 'Fitzgerald',
-    creatorType: 'author'
-  }]
+  creators: [
+    {
+      firstName: 'F. Scott',
+      lastName: 'Fitzgerald',
+      creatorType: 'author',
+    },
+  ],
 });
 ```
 
@@ -61,13 +67,13 @@ const newItem = await client.items.create({
 // Using API key
 const client = createClient({
   apiKey: 'your-api-key',
-  userId: 'your-user-id' // or groupId for group libraries
+  userId: 'your-user-id', // or groupId for group libraries
 });
 
 // Using OAuth token
 const client = createClient({
   oauthToken: 'your-oauth-token',
-  userId: 'your-user-id'
+  userId: 'your-user-id',
 });
 ```
 
@@ -84,18 +90,20 @@ const item = await client.items.get('ITEM_KEY');
 const newItem = await client.items.create({
   itemType: 'journalArticle',
   title: 'Research Paper',
-  creators: [{
-    firstName: 'John',
-    lastName: 'Doe',
-    creatorType: 'author'
-  }],
+  creators: [
+    {
+      firstName: 'John',
+      lastName: 'Doe',
+      creatorType: 'author',
+    },
+  ],
   date: '2024',
-  publicationTitle: 'Journal of Research'
+  publicationTitle: 'Journal of Research',
 });
 
 // Update item
 const updatedItem = await client.items.update('ITEM_KEY', {
-  title: 'Updated Title'
+  title: 'Updated Title',
 });
 
 // Delete item
@@ -104,7 +112,7 @@ await client.items.delete('ITEM_KEY');
 // Search items
 const searchResults = await client.items.getAll({
   q: 'search query',
-  itemType: 'book'
+  itemType: 'book',
 });
 ```
 
@@ -117,12 +125,12 @@ const collections = await client.collections.getAll();
 // Create new collection
 const newCollection = await client.collections.create({
   name: 'My Research Collection',
-  parentCollection: 'PARENT_KEY' // optional
+  parentCollection: 'PARENT_KEY', // optional
 });
 
 // Get collection items
 const collectionItems = await client.items.getAll({
-  collectionKey: 'COLLECTION_KEY'
+  collectionKey: 'COLLECTION_KEY',
 });
 
 // Add item to collection
@@ -136,7 +144,7 @@ await client.items.addToCollection('ITEM_KEY', 'COLLECTION_KEY');
 const itemsData = [
   { itemType: 'book', title: 'Book 1' },
   { itemType: 'book', title: 'Book 2' },
-  { itemType: 'book', title: 'Book 3' }
+  { itemType: 'book', title: 'Book 3' },
 ];
 
 const batchResult = await client.items.batchCreate(itemsData);
@@ -146,7 +154,7 @@ console.log('Failed items:', batchResult.failed);
 // Batch update items
 const updates = [
   { key: 'ITEM_KEY_1', data: { title: 'Updated Title 1' } },
-  { key: 'ITEM_KEY_2', data: { title: 'Updated Title 2' } }
+  { key: 'ITEM_KEY_2', data: { title: 'Updated Title 2' } },
 ];
 
 const updateResult = await client.items.batchUpdate(updates);
@@ -155,11 +163,11 @@ const updateResult = await client.items.batchUpdate(updates);
 ### Error Handling
 
 ```typescript
-import { 
-  ZoteroAPIError, 
-  ZoteroNotFoundError, 
+import {
+  ZoteroAPIError,
+  ZoteroNotFoundError,
   ZoteroRateLimitError,
-  ZoteroAuthenticationError
+  ZoteroAuthenticationError,
 } from 'zotero-web-client';
 
 try {
@@ -187,7 +195,7 @@ const client = createClient({
   timeout: 30000, // Request timeout in ms
   retryAttempts: 3, // Number of retry attempts
   retryDelay: 1000, // Base delay between retries
-  userAgent: 'MyApp/1.0.0' // Custom user agent
+  userAgent: 'MyApp/1.0.0', // Custom user agent
 });
 ```
 
@@ -202,7 +210,7 @@ Main client class for interacting with the Zotero API.
 - `apiKey` - Your Zotero API key
 - `userId` - Your Zotero user ID (for personal libraries)
 - `groupId` - Group ID (for group libraries)
-- `baseURL` - API base URL (default: 'https://api.zotero.org')
+- `baseURL` - API base URL (default: '<https://api.zotero.org>')
 - `timeout` - Request timeout in milliseconds (default: 30000)
 - `retryAttempts` - Number of retry attempts (default: 3)
 - `retryDelay` - Base delay between retries (default: 1000)
@@ -244,14 +252,16 @@ Handles all collection-related operations.
 
 ## Type Safety
 
-This client uses types generated from Zotero's official schema via the `zotero-schema-types` package:
+This client uses types generated from Zotero's official schema via the
+`zotero-schema-types` package:
 
 ```typescript
 import { ZoteroItem, ZoteroCollection } from 'zotero-web-client';
 
 // All operations are fully typed
 const item: ZoteroItem = await client.items.get('ITEM_KEY');
-const collection: ZoteroCollection = await client.collections.get('COLLECTION_KEY');
+const collection: ZoteroCollection =
+  await client.collections.get('COLLECTION_KEY');
 ```
 
 ## Error Types

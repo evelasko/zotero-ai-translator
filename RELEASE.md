@@ -1,6 +1,7 @@
 # Release Process Guide
 
-This monorepo uses a tag-based release workflow with Changesets for version management.
+This monorepo uses a tag-based release workflow with Changesets for version
+management.
 
 ## Overview
 
@@ -8,6 +9,21 @@ This monorepo uses a tag-based release workflow with Changesets for version mana
 2. **Changesets** track changes that need to be released
 3. **Version PRs** can be created automatically when changesets exist
 4. **Tags** trigger the actual npm publish
+
+## Quick Release Commands
+
+For a complete local release flow:
+
+```bash
+# 1. Create changeset
+pnpm changeset
+
+# 2. Version and tag in one command
+pnpm release:local
+
+# 3. Push changes and tag
+git push origin main --tags
+```
 
 ## Release Workflow
 
@@ -35,7 +51,7 @@ git push origin main
 
 ### Step 3: Version the Packages
 
-**Option A: Manual Versioning (Recommended)**
+#### **Option A: Manual Versioning (Recommended)**
 
 ```bash
 # Pull latest changes
@@ -54,9 +70,10 @@ git commit -m "chore: release packages"
 git push origin main
 ```
 
-**Option B: Automated Version PR**
+#### **Option B: Automated Version PR**
 
-If your commit message contains `[changeset]`, the CI will automatically create a version PR.
+If your commit message contains `[changeset]`, the CI will automatically create
+a version PR.
 
 ### Step 4: Create and Push a Release Tag
 
@@ -78,21 +95,6 @@ git push origin v1.0.1
 2. Verify packages are published to npm
 3. Check the GitHub release is created
 
-## Quick Release Commands
-
-For a complete local release flow:
-
-```bash
-# 1. Create changeset
-pnpm changeset
-
-# 2. Version and tag in one command
-pnpm release:local
-
-# 3. Push changes and tag
-git push origin main --tags
-```
-
 ## Version Types
 
 - **Patch** (1.0.0 → 1.0.1): Bug fixes, documentation
@@ -102,21 +104,25 @@ git push origin main --tags
 ## Important Notes
 
 1. **NPM Token**: Ensure `NPM_TOKEN` is set in GitHub repository secrets
-2. **Synchronized Versions**: All packages release together with the same version
+2. **Synchronized Versions**: All packages release together with the same
+   version
 3. **No Direct npm publish**: Always use tags to trigger releases
 4. **Changesets Required**: You must create changesets for version bumps
 
 ## Troubleshooting
 
 ### Release workflow not triggering
+
 - Ensure tag starts with `v` (e.g., `v1.0.0`)
 - Check GitHub Actions permissions
 
 ### Version mismatch
+
 - All packages use synchronized versioning
 - Check `.changeset/config.json` for `fixed` configuration
 
 ### Publishing fails
+
 - Verify NPM_TOKEN has publish permissions
 - Check package names are available on npm
 - Ensure `publishConfig.access: "public"` in package.json files

@@ -74,9 +74,7 @@
         "vitest.config.ts",
         "jest.config.js"
       ],
-      "outputs": [
-        "coverage/**"
-      ]
+      "outputs": []
     },
     "test:watch": {
       "dependsOn": [
