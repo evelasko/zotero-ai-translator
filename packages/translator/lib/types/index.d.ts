@@ -2,7 +2,7 @@
  * Type definitions for the Zotero AI Translator package
  */
 import { ZoteroItemData } from 'zotero-schema-types';
-import { AIProviderConfig } from './providers';
+import { AnthropicConfig } from './anthropic';
 /**
  * Input configuration for URL-based translation
  */
@@ -51,9 +51,9 @@ export interface TranslatorConfig {
      */
     debug?: boolean;
     /**
-     * AI provider configuration
+     * AI configuration using Anthropic
      */
-    ai?: AIProviderConfig;
+    ai?: AnthropicConfig;
 }
 /**
  * Extracted content from URL or source text
@@ -186,4 +186,4 @@ export declare class AIExtractionError extends TranslatorError {
 export declare class AIValidationError extends TranslatorError {
     constructor(message: string, cause?: Error);
 }
-export type { AIProviderConfig, AnthropicConfig, AnthropicModel, LLMProvider, ModelCapabilities, OllamaConfig, OllamaModel, OpenAIConfig, OpenAIModel, ProviderFactory, ProviderName, VertexAIConfig, VertexAIModel } from './providers';
+export type { AnthropicConfig, AnthropicModel, AnthropicResponse, AnthropicClientOptions } from './anthropic';

@@ -1,5 +1,16 @@
 # zotero-ai-translator
 
+## 2.0.0
+
+### Major Changes
+
+- Refactored for Electron Environment
+
+### Patch Changes
+
+- Updated dependencies
+  - zotero-schema-types@2.0.0
+
 ## 1.0.3
 
 ### Patch Changes

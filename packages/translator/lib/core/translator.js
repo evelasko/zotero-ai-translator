@@ -5,7 +5,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Translator = void 0;
 const types_1 = require("../types");
-const content_extractor_1 = require("../utils/content-extractor");
+const browser_content_extractor_1 = require("../utils/browser-content-extractor");
 const ai_service_1 = require("./ai-service");
 const config_validator_1 = require("./config-validator");
 /**
@@ -25,7 +25,7 @@ class Translator {
             ai: config.ai,
         };
         this.validateConfig();
-        this.contentExtractor = new content_extractor_1.ContentExtractor(this.config);
+        this.contentExtractor = new browser_content_extractor_1.BrowserContentExtractor(this.config);
         // Initialize AI service if configuration is provided
         if (this.config.ai) {
             this.aiService = new ai_service_1.AIService(this.config.ai);

@@ -1,32 +1,22 @@
 "use strict";
 /**
- * AI Service for LangChain-powered content translation with multi-provider support
+ * AI Service for Anthropic-powered content translation
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AIService = void 0;
-const output_parsers_1 = require("@langchain/core/output_parsers");
-const prompts_1 = require("@langchain/core/prompts");
 const zod_1 = require("zod");
 const types_1 = require("../types");
+const anthropic_client_1 = require("./anthropic-client");
 const config_validator_1 = require("./config-validator");
-const provider_factory_1 = require("./provider-factory");
 /**
- * AI Service class that handles the two-step AI translation process with multi-provider support
+ * AI Service class that handles the two-step AI translation process using Anthropic
  */
 class AIService {
-    config;
-    classificationModel;
-    extractionModel;
-    provider;
+    anthropicClient;
     constructor(config) {
         // Validate the configuration
         config_validator_1.ConfigValidator.validateProviderConfig(config);
-        this.config = config;
-        this.provider = config.provider;
-        // Create provider and models
-        const providerInstance = provider_factory_1.ProviderFactory.createProvider(config);
-        this.classificationModel = providerInstance.createClassificationModel(config);
-        this.extractionModel = providerInstance.createExtractionModel(config);
+        this.anthropicClient = new anthropic_client_1.AnthropicClient(config);
     }
     /**
      * Main AI translation method that executes the two-step process
@@ -34,18 +24,18 @@ class AIService {
     async translateContent(content) {
         try {
             // Step 1: Classification - determine the item type
-            const itemType = await this.classifyContent(content);
+            const itemType = await this.anthropicClient.classify(content);
             // Step 2: Extraction - extract structured data using dynamic schema
-            const extractedData = await this.extractStructuredData(content, itemType);
+            const extractedData = await this.anthropicClient.extract(content, itemType);
             // Step 3: Validation - validate using Zod schema
             const validatedItem = await this.validateExtractedData(extractedData, itemType);
             return {
                 item: validatedItem,
                 confidence: this.calculateConfidence(content, validatedItem),
-                provider: this.provider,
+                provider: 'anthropic',
                 modelsUsed: {
-                    classification: this.getModelName('classification'),
-                    extraction: this.getModelName('extraction'),
+                    classification: this.anthropicClient.getClassificationModel(),
+                    extraction: this.anthropicClient.getExtractionModel(),
                 },
             };
         }
@@ -59,104 +49,7 @@ class AIService {
         }
     }
     /**
-     * Step 1: Classification - determine the most appropriate Zotero item type
-     */
-    async classifyContent(content) {
-        try {
-            const classificationPrompt = prompts_1.PromptTemplate.fromTemplate(`
-You are a bibliographic expert who specializes in classifying content into appropriate Zotero item types.
-
-Given the following content, determine the most appropriate Zotero item type from this list:
-- webpage: General web content, blog posts, online articles
-- journalArticle: Academic journal articles, research papers
-- book: Books, monographs, edited volumes
-- bookSection: Book chapters, sections within books
-- document: Reports, working papers, white papers
-- conferencePaper: Conference proceedings, conference papers
-- thesis: Dissertations, theses
-- newspaperArticle: News articles, newspaper content
-- magazineArticle: Magazine articles, popular press
-- blogPost: Blog posts, personal articles
-- forumPost: Forum discussions, community posts
-- podcast: Podcast episodes, audio content
-- videoRecording: Video content, lectures, presentations
-
-Analyze the content and respond with ONLY the item type (e.g., "journalArticle", "webpage", etc.).
-
-Title: {title}
-URL: {url}
-Content Type: {contentType}
-Content Preview: {contentPreview}
-
-Item Type:`);
-            const contentPreview = content.text.substring(0, 1000);
-            const result = await this.classificationModel.invoke(await classificationPrompt.format({
-                title: content.title || 'Unknown',
-                url: content.url || 'Unknown',
-                contentType: content.contentType || 'Unknown',
-                contentPreview,
-            }));
-            const itemType = result.content.toString().trim().toLowerCase();
-            // Validate that the returned item type is valid
-            const validItemTypes = [
-                'webpage', 'journalarticle', 'book', 'booksection', 'document',
-                'conferencepaper', 'thesis', 'newspaperarticle', 'magazinearticle',
-                'blogpost', 'forumpost', 'podcast', 'videorecording'
-            ];
-            if (!validItemTypes.includes(itemType)) {
-                throw new types_1.AIClassificationError(`Invalid item type returned: ${itemType}`);
-            }
-            return itemType;
-        }
-        catch (error) {
-            if (error instanceof types_1.AIClassificationError) {
-                throw error;
-            }
-            throw new types_1.AIClassificationError('Failed to classify content', error instanceof Error ? error : new Error(String(error)));
-        }
-    }
-    /**
-     * Step 2: Extraction - extract structured data using dynamic Zod schema
-     */
-    async extractStructuredData(content, itemType) {
-        try {
-            // Get the appropriate schema for the item type
-            const schema = this.getSchemaForItemType(itemType);
-            // Create output parser
-            const parser = output_parsers_1.StructuredOutputParser.fromZodSchema(schema);
-            // Create extraction prompt
-            const extractionPrompt = prompts_1.PromptTemplate.fromTemplate(`
-You are a bibliographic data extraction expert. Extract structured metadata from the given content for a Zotero item of type "{itemType}".
-
-Extract as much relevant information as possible, but only include fields that you can confidently determine from the content. Leave fields empty if the information is not available or uncertain.
-
-{format_instructions}
-
-Title: {title}
-URL: {url}
-Content Type: {contentType}
-Full Content: {fullContent}
-
-Extracted Data:`);
-            const formattedPrompt = await extractionPrompt.format({
-                itemType,
-                title: content.title || '',
-                url: content.url || '',
-                contentType: content.contentType || '',
-                fullContent: content.text,
-                format_instructions: parser.getFormatInstructions(),
-            });
-            const result = await this.extractionModel.invoke(formattedPrompt);
-            // Parse the result using the output parser
-            const parsedResult = await parser.parse(result.content.toString());
-            return parsedResult;
-        }
-        catch (error) {
-            throw new types_1.AIExtractionError('Failed to extract structured data', error instanceof Error ? error : new Error(String(error)));
-        }
-    }
-    /**
-     * Step 3: Validation - validate extracted data using Zod schema
+     * Validate extracted data using Zod schema
      */
     async validateExtractedData(extractedData, itemType) {
         try {
@@ -189,11 +82,13 @@ Extracted Data:`);
         // Base schema with common fields
         const baseSchema = {
             title: zod_1.z.string().optional(),
-            creators: zod_1.z.array(zod_1.z.object({
+            creators: zod_1.z
+                .array(zod_1.z.object({
                 firstName: zod_1.z.string().optional(),
                 lastName: zod_1.z.string(),
                 creatorType: zod_1.z.string().default('author'),
-            })).optional(),
+            }))
+                .optional(),
             date: zod_1.z.string().optional(),
             url: zod_1.z.string().optional(),
             accessDate: zod_1.z.string().optional(),
@@ -328,38 +223,13 @@ Extracted Data:`);
         return Math.min(confidence, 1.0);
     }
     /**
-     * Get the model name for a specific purpose
-     */
-    getModelName(purpose) {
-        switch (this.config.provider) {
-            case 'openai':
-                return purpose === 'classification'
-                    ? this.config.classificationModel || 'gpt-4o-mini'
-                    : this.config.extractionModel || 'gpt-4o-mini';
-            case 'anthropic':
-                return purpose === 'classification'
-                    ? this.config.classificationModel || 'claude-3-haiku-20240307'
-                    : this.config.extractionModel || 'claude-3-5-sonnet-20241022';
-            case 'vertexai':
-                return purpose === 'classification'
-                    ? this.config.classificationModel || 'gemini-1.5-flash'
-                    : this.config.extractionModel || 'gemini-1.5-pro';
-            case 'ollama':
-                return purpose === 'classification'
-                    ? this.config.classificationModel || 'llama3.1:8b'
-                    : this.config.extractionModel || 'llama3.1:8b';
-            default:
-                return 'unknown';
-        }
-    }
-    /**
-     * Get provider configuration for debugging
+     * Get provider information for debugging
      */
     getProviderInfo() {
         return {
-            provider: this.provider,
-            classificationModel: this.getModelName('classification'),
-            extractionModel: this.getModelName('extraction'),
+            provider: 'anthropic',
+            classificationModel: this.anthropicClient.getClassificationModel(),
+            extractionModel: this.anthropicClient.getExtractionModel(),
         };
     }
 }

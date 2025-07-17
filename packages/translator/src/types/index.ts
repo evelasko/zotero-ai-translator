@@ -3,7 +3,7 @@
  */
 
 import { ZoteroItemData } from 'zotero-schema-types';
-import { AIProviderConfig } from './providers';
+import { AnthropicConfig } from './anthropic';
 
 /**
  * Input configuration for URL-based translation
@@ -61,9 +61,9 @@ export interface TranslatorConfig {
   debug?: boolean;
   
   /**
-   * AI provider configuration
+   * AI configuration using Anthropic
    */
-  ai?: AIProviderConfig;
+  ai?: AnthropicConfig;
 }
 
 /**
@@ -248,8 +248,8 @@ export class AIValidationError extends TranslatorError {
   }
 }
 
-// Re-export provider types for convenience
+// Re-export Anthropic types
 export type {
-    AIProviderConfig, AnthropicConfig, AnthropicModel, LLMProvider, ModelCapabilities, OllamaConfig, OllamaModel, OpenAIConfig, OpenAIModel, ProviderFactory, ProviderName, VertexAIConfig, VertexAIModel
-} from './providers';
+    AnthropicConfig, AnthropicModel, AnthropicResponse, AnthropicClientOptions
+} from './anthropic';
 

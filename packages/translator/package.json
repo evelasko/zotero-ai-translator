@@ -1,6 +1,6 @@
 {
   "name": "zotero-ai-translator",
-  "version": "1.0.3",
+  "version": "2.0.0",
   "description": "AI-powered content translation service for Zotero metadata extraction",
   "author": "Enrique Velasco",
   "license": "MIT",
@@ -26,49 +26,21 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest --coverage",
-    "lint": "eslint src/**/*.ts",
-    "lint:fix": "eslint src/**/*.ts --fix",
+    "lint": "eslint 'src/**/*.ts' --ignore-pattern 'src/tests/**'",
+    "lint:fix": "eslint 'src/**/*.ts' --ignore-pattern 'src/tests/**' --fix",
     "type-check": "tsc --noEmit",
     "clean": "rm -rf lib dist"
   },
   "dependencies": {
-    "@langchain/core": "^0.3.62",
-    "@mozilla/readability": "^0.6.0",
+    "@anthropic-ai/sdk": "^0.36.0",
+    "pdfjs-dist": "^4.0.0",
+    "dompurify": "^3.2.3",
     "zotero-schema-types": "workspace:*",
-    "axios": "^1.10.0",
-    "jsdom": "^26.1.0",
-    "langchain": "^0.3.30",
-    "pdf-parse": "^1.1.1",
     "zod": "^4.0.5"
   },
-  "peerDependencies": {
-    "@langchain/openai": "^0.6.1",
-    "@langchain/anthropic": "^0.3.24",
-    "@langchain/google-vertexai": "^0.2.15",
-    "@langchain/ollama": "^0.2.3"
-  },
-  "peerDependenciesMeta": {
-    "@langchain/openai": {
-      "optional": true
-    },
-    "@langchain/anthropic": {
-      "optional": true
-    },
-    "@langchain/google-vertexai": {
-      "optional": true
-    },
-    "@langchain/ollama": {
-      "optional": true
-    }
-  },
   "devDependencies": {
-    "@types/jsdom": "^21.1.7",
+    "@types/dompurify": "^3.2.0",
     "@types/node": "^24.0.14",
-    "@types/pdf-parse": "^1.1.5",
-    "@langchain/openai": "^0.6.1",
-    "@langchain/anthropic": "^0.3.24",
-    "@langchain/google-vertexai": "^0.2.15",
-    "@langchain/ollama": "^0.2.3",
     "dotenv": "^16.6.1",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3",

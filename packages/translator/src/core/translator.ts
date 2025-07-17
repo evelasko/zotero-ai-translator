@@ -11,7 +11,7 @@ import {
     TranslatorConfig,
     TranslatorError
 } from '../types';
-import { ContentExtractor } from '../utils/content-extractor';
+import { BrowserContentExtractor } from '../utils/browser-content-extractor';
 import { AIService } from './ai-service';
 import { ConfigValidator } from './config-validator';
 
@@ -20,7 +20,7 @@ import { ConfigValidator } from './config-validator';
  */
 export class Translator {
   private readonly config: Required<Omit<TranslatorConfig, 'ai'>> & { ai?: TranslatorConfig['ai'] };
-  private readonly contentExtractor: ContentExtractor;
+  private readonly contentExtractor: BrowserContentExtractor;
   private readonly aiService?: AIService;
 
   constructor(config: TranslatorConfig = {}) {
@@ -34,7 +34,7 @@ export class Translator {
     };
 
     this.validateConfig();
-    this.contentExtractor = new ContentExtractor(this.config);
+    this.contentExtractor = new BrowserContentExtractor(this.config);
     
     // Initialize AI service if configuration is provided
     if (this.config.ai) {

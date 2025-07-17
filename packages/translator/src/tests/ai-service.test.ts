@@ -1,5 +1,5 @@
 /**
- * Tests for the AI Service
+ * Tests for the AI Service - Anthropic-only version
  */
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -7,158 +7,58 @@ import { AIService } from '../core/ai-service';
 import {
   AIClassificationError,
   AIExtractionError,
-  AIProviderConfig,
   AIValidationError,
+  AnthropicConfig,
   ExtractedContent,
 } from '../types';
-import { registerAllProviders } from '../core/providers';
-import { ProviderDetector } from '../core/provider-factory';
+import { AnthropicClient } from '../core/anthropic-client';
 
-// Mock LangChain modules
-vi.mock('@langchain/openai', () => ({
-  ChatOpenAI: vi.fn().mockImplementation(() => {
-    let callCount = 0;
-    return {
-      invoke: vi.fn().mockImplementation(async () => {
-        callCount++;
-        if (callCount % 2 === 1) {
-          // Odd calls: classification
-          return { content: 'webpage' };
-        } else {
-          // Even calls: extraction
+// Mock the Anthropic SDK
+vi.mock('@anthropic-ai/sdk', () => ({
+  default: vi.fn().mockImplementation(() => ({
+    messages: {
+      create: vi.fn().mockImplementation(async ({ messages }) => {
+        const userMessage = messages[0]?.content;
+        
+        // Check if this is a classification request
+        if (typeof userMessage === 'string' && userMessage.includes('Item Type:')) {
           return {
-            content: JSON.stringify({
-              itemType: 'webpage',
+            content: [{ type: 'text', text: 'webpage' }],
+          };
+        }
+        
+        // Otherwise, this is an extraction request
+        return {
+          content: [{ 
+            type: 'text', 
+            text: JSON.stringify({
               title: 'Test Article',
               creators: [{ firstName: 'Test', lastName: 'Author', creatorType: 'author' }],
               abstractNote: 'Test abstract',
               date: '2024-01-01',
               url: 'https://example.com/article',
-            }),
-          };
-        }
+              websiteTitle: 'Test Website',
+            })
+          }],
+        };
       }),
-    };
-  }),
-}));
-
-vi.mock('@langchain/anthropic', () => ({
-  ChatAnthropic: vi.fn().mockImplementation(() => {
-    let callCount = 0;
-    return {
-      invoke: vi.fn().mockImplementation(async () => {
-        callCount++;
-        if (callCount % 2 === 1) {
-          return { content: 'webpage' };
-        } else {
-          return {
-            content: JSON.stringify({
-              itemType: 'webpage',
-              title: 'Test Article',
-              creators: [{ firstName: 'Test', lastName: 'Author', creatorType: 'author' }],
-              abstractNote: 'Test abstract',
-              date: '2024-01-01',
-              url: 'https://example.com/article',
-            }),
-          };
-        }
-      }),
-    };
-  }),
-}));
-
-vi.mock('@langchain/google-vertexai', () => ({
-  ChatVertexAI: vi.fn().mockImplementation(() => {
-    let callCount = 0;
-    return {
-      invoke: vi.fn().mockImplementation(async () => {
-        callCount++;
-        if (callCount % 2 === 1) {
-          return { content: 'webpage' };
-        } else {
-          return {
-            content: JSON.stringify({
-              itemType: 'webpage',
-              title: 'Test Article',
-              creators: [{ firstName: 'Test', lastName: 'Author', creatorType: 'author' }],
-              abstractNote: 'Test abstract',
-              date: '2024-01-01',
-              url: 'https://example.com/article',
-            }),
-          };
-        }
-      }),
-    };
-  }),
-}));
-
-vi.mock('@langchain/ollama', () => ({
-  ChatOllama: vi.fn().mockImplementation(() => {
-    let callCount = 0;
-    return {
-      invoke: vi.fn().mockImplementation(async () => {
-        callCount++;
-        if (callCount % 2 === 1) {
-          return { content: 'webpage' };
-        } else {
-          return {
-            content: JSON.stringify({
-              itemType: 'webpage',
-              title: 'Test Article',
-              creators: [{ firstName: 'Test', lastName: 'Author', creatorType: 'author' }],
-              abstractNote: 'Test abstract',
-              date: '2024-01-01',
-              url: 'https://example.com/article',
-            }),
-          };
-        }
-      }),
-    };
-  }),
-}));
-
-vi.mock('@langchain/core/output_parsers', () => ({
-  StructuredOutputParser: {
-    fromZodSchema: vi.fn().mockReturnValue({
-      getFormatInstructions: vi.fn().mockReturnValue('Format instructions'),
-      parse: vi.fn().mockResolvedValue({
-        itemType: 'webpage',
-        title: 'Test Title',
-        creators: [],
-        tags: [],
-        collections: [],
-        relations: {},
-        dateAdded: new Date().toISOString(),
-        dateModified: new Date().toISOString(),
-      }),
-    }),
-  },
-  OutputFixingParser: {
-    fromLLM: vi.fn().mockReturnValue({
-      // Mock parser
-    }),
-  },
+    },
+  })),
 }));
 
 describe('AIService', () => {
   let aiService: AIService;
-  let mockConfig: AIProviderConfig;
+  let mockConfig: AnthropicConfig;
   let mockContent: ExtractedContent;
 
   beforeEach(() => {
-    // Mock ProviderDetector to always return true for availability
-    vi.spyOn(ProviderDetector, 'isProviderInstalled').mockReturnValue(true);
-    
-    // Register providers before each test
-    registerAllProviders();
-    
     mockConfig = {
-      provider: 'openai',
-      apiKey: 'sk-test-api-key',
-      classificationModel: 'gpt-3.5-turbo',
-      extractionModel: 'gpt-3.5-turbo',
+      apiKey: 'sk-ant-test-api-key',
+      classificationModel: 'claude-3-haiku-20240307',
+      extractionModel: 'claude-3-5-sonnet-20241022',
       temperature: 0.1,
       maxTokens: 2000,
+      enableDangerousBrowserAccess: true,
     };
 
     mockContent = {
@@ -174,74 +74,25 @@ describe('AIService', () => {
       },
     };
     
-    // Create default aiService instance for tests that don't override it
-    try {
-      aiService = new AIService(mockConfig);
-    } catch (error) {
-      // Some tests may not have the right provider registered
-    }
+    aiService = new AIService(mockConfig);
   });
 
   describe('constructor', () => {
-    it('should create AI service with OpenAI config', () => {
-      const openaiConfig: AIProviderConfig = {
-        provider: 'openai',
-        apiKey: 'sk-test-key',
-      };
-
-      const aiService = new AIService(openaiConfig);
-      expect(aiService).toBeDefined();
-    });
-
     it('should create AI service with Anthropic config', () => {
-      const anthropicConfig: AIProviderConfig = {
-        provider: 'anthropic',
+      const anthropicConfig: AnthropicConfig = {
         apiKey: 'sk-ant-test-key',
       };
 
-      expect(() => new AIService(anthropicConfig)).not.toThrow();
-    });
-
-    it('should create AI service with VertexAI config', () => {
-      const vertexaiConfig: AIProviderConfig = {
-        provider: 'vertexai',
-        projectId: 'test-project',
-        location: 'us-central1',
-      };
-
-      expect(() => new AIService(vertexaiConfig)).not.toThrow();
-    });
-
-    it('should create AI service with Ollama config', () => {
-      const ollamaConfig: AIProviderConfig = {
-        provider: 'ollama',
-        baseUrl: 'http://localhost:11434',
-      };
-
-      expect(() => new AIService(ollamaConfig)).not.toThrow();
+      const service = new AIService(anthropicConfig);
+      expect(service).toBeDefined();
     });
 
     it('should create AI service with full config', () => {
       expect(() => new AIService(mockConfig)).not.toThrow();
     });
 
-    it('should handle OpenAI custom base URL', () => {
-      const configWithBaseURL: AIProviderConfig = {
-        provider: 'openai',
-        apiKey: 'sk-test-api-key',
-        classificationModel: 'gpt-3.5-turbo',
-        extractionModel: 'gpt-3.5-turbo',
-        temperature: 0.1,
-        maxTokens: 2000,
-        baseURL: 'https://custom-api.example.com',
-      };
-
-      expect(() => new AIService(configWithBaseURL)).not.toThrow();
-    });
-
     it('should handle Anthropic custom headers', () => {
-      const configWithHeaders: AIProviderConfig = {
-        provider: 'anthropic',
+      const configWithHeaders: AnthropicConfig = {
         apiKey: 'sk-ant-test-key',
         customHeaders: {
           'Custom-Header': 'test-value',
@@ -251,20 +102,22 @@ describe('AIService', () => {
       expect(() => new AIService(configWithHeaders)).not.toThrow();
     });
 
-    it('should handle VertexAI authentication', () => {
-      const configWithAuth: AIProviderConfig = {
-        provider: 'vertexai',
-        projectId: 'test-project',
-        location: 'us-central1',
-        authOptions: {
-          credentials: {
-            client_email: 'test@example.com',
-            private_key: 'test-key',
-          },
-        },
+    it('should handle browser access configuration', () => {
+      const configWithBrowserAccess: AnthropicConfig = {
+        apiKey: 'sk-ant-test-key',
+        enableDangerousBrowserAccess: true,
       };
 
-      expect(() => new AIService(configWithAuth)).not.toThrow();
+      expect(() => new AIService(configWithBrowserAccess)).not.toThrow();
+    });
+
+    it('should handle prompt caching configuration', () => {
+      const configWithCaching: AnthropicConfig = {
+        apiKey: 'sk-ant-test-key',
+        enablePromptCaching: true,
+      };
+
+      expect(() => new AIService(configWithCaching)).not.toThrow();
     });
   });
 
@@ -273,45 +126,88 @@ describe('AIService', () => {
       expect(typeof aiService.translateContent).toBe('function');
     });
 
-    // Note: These tests would require mocking the LangChain calls
-    // For now, we'll test the method signature and basic structure
-    it('should return promise that resolves to translation result', async () => {
-      // This test would need proper mocking of LangChain responses
-      // For now, we'll just verify the method exists and can be called
-      expect(aiService.translateContent(mockContent)).toBeInstanceOf(Promise);
+    it('should successfully translate content', async () => {
+      const result = await aiService.translateContent(mockContent);
+      
+      expect(result).toHaveProperty('item');
+      expect(result).toHaveProperty('confidence');
+      expect(result).toHaveProperty('provider');
+      expect(result).toHaveProperty('modelsUsed');
+      
+      expect(result.provider).toBe('anthropic');
+      expect(result.modelsUsed).toHaveProperty('classification');
+      expect(result.modelsUsed).toHaveProperty('extraction');
+      expect(result.item).toHaveProperty('title');
+      expect(result.item).toHaveProperty('itemType');
     });
 
-    it('should handle different provider configurations', async () => {
-      const providers: AIProviderConfig[] = [
-        {
-          provider: 'openai',
-          apiKey: 'sk-test-key',
-        },
-        {
-          provider: 'anthropic',
-          apiKey: 'sk-ant-test-key',
-        },
-        {
-          provider: 'vertexai',
-          projectId: 'test-project',
-          location: 'us-central1',
-        },
-        {
-          provider: 'ollama',
-          baseUrl: 'http://localhost:11434',
-        },
-      ];
+    it('should return correct provider information', async () => {
+      const result = await aiService.translateContent(mockContent);
+      
+      expect(result.provider).toBe('anthropic');
+      expect(result.modelsUsed.classification).toBe('claude-3-haiku-20240307');
+      expect(result.modelsUsed.extraction).toBe('claude-3-5-sonnet-20241022');
+    });
 
-      for (const config of providers) {
-        const service = new AIService(config);
-        expect(service.translateContent(mockContent)).toBeInstanceOf(Promise);
-      }
+    it('should handle different content types', async () => {
+      const htmlContent: ExtractedContent = {
+        text: '<p>HTML content</p>',
+        contentType: 'text/html',
+        title: 'HTML Document',
+      };
+
+      const pdfContent: ExtractedContent = {
+        text: 'PDF extracted text',
+        contentType: 'application/pdf',
+        title: 'PDF Document',
+      };
+
+      const plainTextContent: ExtractedContent = {
+        text: 'Plain text content',
+        contentType: 'text/plain',
+      };
+
+      const htmlResult = await aiService.translateContent(htmlContent);
+      const pdfResult = await aiService.translateContent(pdfContent);
+      const plainTextResult = await aiService.translateContent(plainTextContent);
+
+      expect(htmlResult.provider).toBe('anthropic');
+      expect(pdfResult.provider).toBe('anthropic');
+      expect(plainTextResult.provider).toBe('anthropic');
+    });
+
+    it('should handle content with missing metadata', async () => {
+      const contentWithoutMetadata: ExtractedContent = {
+        text: 'Content without metadata',
+        contentType: 'text/plain',
+      };
+
+      const result = await aiService.translateContent(contentWithoutMetadata);
+      expect(result.provider).toBe('anthropic');
+      expect(result.item).toHaveProperty('title');
+    });
+
+    it('should handle very long content', async () => {
+      const longContent: ExtractedContent = {
+        text: 'A'.repeat(100000),
+        contentType: 'text/plain',
+        title: 'Very Long Document',
+      };
+
+      const result = await aiService.translateContent(longContent);
+      expect(result.provider).toBe('anthropic');
+    });
+
+    it('should calculate confidence scores', async () => {
+      const result = await aiService.translateContent(mockContent);
+      
+      expect(result.confidence).toBeGreaterThan(0);
+      expect(result.confidence).toBeLessThanOrEqual(1);
     });
   });
 
   describe('error handling', () => {
     it('should handle classification errors gracefully', () => {
-      // Test error handling structure
       expect(AIClassificationError).toBeDefined();
       expect(AIExtractionError).toBeDefined();
       expect(AIValidationError).toBeDefined();
@@ -330,25 +226,21 @@ describe('AIService', () => {
       expect(validationError.name).toBe('AIValidationError');
       expect(validationError.code).toBe('AI_VALIDATION_ERROR');
     });
+
+    it('should handle Anthropic client errors', async () => {
+      // Mock the Anthropic client to throw an error
+      const mockError = new Error('Anthropic API error');
+      vi.spyOn(AnthropicClient.prototype, 'classify').mockRejectedValue(mockError);
+
+      await expect(aiService.translateContent(mockContent)).rejects.toThrow(
+        AIExtractionError
+      );
+    });
   });
 
   describe('configuration validation', () => {
-    it('should accept valid OpenAI configuration', () => {
-      const validConfig: AIProviderConfig = {
-        provider: 'openai',
-        apiKey: 'sk-test-key',
-        classificationModel: 'gpt-4',
-        extractionModel: 'gpt-4',
-        temperature: 0.2,
-        maxTokens: 4000,
-      };
-
-      expect(() => new AIService(validConfig)).not.toThrow();
-    });
-
     it('should accept valid Anthropic configuration', () => {
-      const validConfig: AIProviderConfig = {
-        provider: 'anthropic',
+      const validConfig: AnthropicConfig = {
         apiKey: 'sk-ant-test-key',
         classificationModel: 'claude-3-5-sonnet-20241022',
         extractionModel: 'claude-3-5-sonnet-20241022',
@@ -360,84 +252,64 @@ describe('AIService', () => {
     });
 
     it('should handle missing optional fields', () => {
-      const minimalOpenAIConfig: AIProviderConfig = {
-        provider: 'openai',
-        apiKey: 'sk-test-key',
-      };
-
-      const minimalAnthropicConfig: AIProviderConfig = {
-        provider: 'anthropic',
+      const minimalConfig: AnthropicConfig = {
         apiKey: 'sk-ant-test-key',
       };
 
-      expect(() => new AIService(minimalOpenAIConfig)).not.toThrow();
-      expect(() => new AIService(minimalAnthropicConfig)).not.toThrow();
+      expect(() => new AIService(minimalConfig)).not.toThrow();
+    });
+
+    it('should validate API key format', () => {
+      const invalidConfig: AnthropicConfig = {
+        apiKey: 'invalid-key',
+      };
+
+      expect(() => new AIService(invalidConfig)).toThrow();
+    });
+  });
+
+  describe('provider information', () => {
+    it('should return correct provider information', () => {
+      const providerInfo = aiService.getProviderInfo();
+      
+      expect(providerInfo.provider).toBe('anthropic');
+      expect(providerInfo.classificationModel).toBe('claude-3-haiku-20240307');
+      expect(providerInfo.extractionModel).toBe('claude-3-5-sonnet-20241022');
+    });
+
+    it('should handle default models', () => {
+      const minimalConfig: AnthropicConfig = {
+        apiKey: 'sk-ant-test-key',
+      };
+
+      const service = new AIService(minimalConfig);
+      const providerInfo = service.getProviderInfo();
+      
+      expect(providerInfo.provider).toBe('anthropic');
+      expect(providerInfo.classificationModel).toBeDefined();
+      expect(providerInfo.extractionModel).toBeDefined();
     });
   });
 
   describe('content processing', () => {
-    it('should handle various content types', () => {
-      const htmlContent: ExtractedContent = {
-        text: '<p>HTML content</p>',
-        contentType: 'text/html',
-        title: 'HTML Document',
-      };
-
-      const pdfContent: ExtractedContent = {
-        text: 'PDF extracted text',
-        contentType: 'application/pdf',
-        title: 'PDF Document',
-      };
-
-      const plainTextContent: ExtractedContent = {
-        text: 'Plain text content',
-        contentType: 'text/plain',
-      };
-
-      // These would need proper mocking to test fully
-      expect(aiService.translateContent(htmlContent)).toBeInstanceOf(Promise);
-      expect(aiService.translateContent(pdfContent)).toBeInstanceOf(Promise);
-      expect(aiService.translateContent(plainTextContent)).toBeInstanceOf(Promise);
-    });
-
-    it('should handle content with missing metadata', () => {
-      const contentWithoutMetadata: ExtractedContent = {
-        text: 'Content without metadata',
-        contentType: 'text/plain',
-      };
-
-      expect(aiService.translateContent(contentWithoutMetadata)).toBeInstanceOf(Promise);
-    });
-
-    it('should handle very long content', () => {
-      const longContent: ExtractedContent = {
-        text: 'A'.repeat(100000),
-        contentType: 'text/plain',
-        title: 'Very Long Document',
-      };
-
-      expect(aiService.translateContent(longContent)).toBeInstanceOf(Promise);
-    });
-
-    it('should handle different provider capabilities', () => {
-      const multimodalContent: ExtractedContent = {
-        text: 'Content with potential image references',
-        contentType: 'text/html',
-        title: 'Multimodal Document',
-      };
-
-      // Test with providers that support different capabilities
-      const providers = [
-        { provider: 'openai' as const, apiKey: 'sk-test' },
-        { provider: 'anthropic' as const, apiKey: 'sk-ant-test' },
-        { provider: 'vertexai' as const, projectId: 'test', location: 'us-central1' },
-        { provider: 'ollama' as const, baseUrl: 'http://localhost:11434' },
-      ];
-
-      for (const config of providers) {
-        const service = new AIService(config);
-        expect(service.translateContent(multimodalContent)).toBeInstanceOf(Promise);
+    it('should handle different item types', async () => {
+      const itemTypes = ['webpage', 'journalarticle', 'book', 'booksection'];
+      
+      for (const itemType of itemTypes) {
+        // Mock the classification to return the specific item type
+        vi.spyOn(AnthropicClient.prototype, 'classify').mockResolvedValue(itemType);
+        
+        const result = await aiService.translateContent(mockContent);
+        expect(result.item.itemType).toBe(itemType);
       }
+    });
+
+    it('should validate extracted data', async () => {
+      const result = await aiService.translateContent(mockContent);
+      
+      // Should have validated the data and added itemType
+      expect(result.item).toHaveProperty('itemType');
+      expect(result.item).toHaveProperty('title');
     });
   });
 });

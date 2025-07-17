@@ -1,5 +1,11 @@
 # zotero-schema-types
 
+## 2.0.0
+
+### Major Changes
+
+- Refactored for Electron Environment
+
 ## 1.0.3
 
 ### Patch Changes

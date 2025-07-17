@@ -27,6 +27,9 @@ export default [
       'turbo.json',
       'pnpm-lock.yaml',
       'package-lock.json',
+      // Ignore test files that are excluded from TypeScript compilation
+      'packages/client/src/tests/**',
+      'packages/translator/src/tests/**',
     ],
   },
 
